@@ -231,7 +231,11 @@ button { font-family: inherit; cursor: pointer; }
   background: var(--gray-field);
   padding: 5px 8px;
   border-radius: 4px 4px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
+.field label .label-text { flex: 1; }
 .field input, .field select, .field textarea {
   border: 1px solid var(--input-border);
   border-radius: 4px;
@@ -256,6 +260,52 @@ button { font-family: inherit; cursor: pointer; }
 
 .checkbox-row { display: flex; flex-wrap: wrap; gap: 10px 18px; }
 .checkbox-item { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+
+/* ---------- Aide contextuelle ---------- */
+.help-btn {
+  width: 15px; height: 15px; border-radius: 50%;
+  border: 1px solid var(--muted); background: #fff; color: var(--muted);
+  font-size: 10px; font-weight: 700; line-height: 1; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; padding: 0;
+  flex-shrink: 0;
+}
+.help-btn:hover, .help-btn.active { background: var(--navy); border-color: var(--navy); color: #fff; }
+.help-wrap { position: relative; display: inline-flex; }
+.help-popover {
+  position: absolute; z-index: 50; top: 20px; left: 0; width: 260px;
+  background: #202124; color: #fff; font-size: 12px; font-weight: 400;
+  padding: 10px 12px; border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.3);
+  line-height: 1.4;
+}
+.help-popover ul { margin: 4px 0 0; padding-left: 16px; }
+
+/* ---------- Sous-onglets (RDV multiples / évaluations Score 40) ---------- */
+.subtabs { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+.subtab-btn {
+  border: 1px solid var(--border); background: #fff; border-radius: 100px;
+  padding: 6px 14px; font-size: 12.5px; font-weight: 600; color: var(--muted);
+}
+.subtab-btn.active { background: var(--navy); border-color: var(--navy); color: #fff; }
+.subtab-btn:hover:not(.active) { border-color: var(--navy); color: var(--navy); }
+.subtab-remove { margin-left: 4px; opacity: .7; }
+
+/* ---------- Contrôles (jalons) ---------- */
+.controle-card {
+  border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px;
+  background: #fff;
+}
+.controle-card.franchi { border-left: 4px solid var(--vert); }
+.controle-card.non-franchi { border-left: 4px solid var(--gray-section); }
+.controle-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.controle-header h3 { font-size: 14px; margin: 0; }
+.controle-condition { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 13px; }
+.controle-condition .mark { width: 16px; text-align: center; font-weight: 700; }
+.controle-condition .mark.ok { color: var(--vert); }
+.controle-condition .mark.ko { color: var(--muted); }
+.controle-condition input[type=checkbox] { width: 15px; height: 15px; }
+
+/* ---------- Tableau répétable (vigilances Fiche Mission) ---------- */
+.repeat-table-actions { margin-top: 8px; }
 
 table.data-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 4px; }
 table.data-table th {
