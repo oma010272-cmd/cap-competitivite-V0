@@ -14,6 +14,18 @@ const CONTRAINTES_SITE_OPTIONS = [
 
 const PIECES_ECHIQUIER = ['Roi', 'Reine', 'Tour', 'Fou', 'Cavalier', 'Pion'];
 
+const ETAPES_PROCESSUS = [
+  '1. Sollicitations / Prospection',
+  '2. Qualification',
+  '3. Go / No-Go',
+  '4. Chiffrage',
+  '5. Deuxième regard',
+  '6. Rédaction du mémoire',
+  '7. Proposition commerciale',
+  '8. Négociation',
+  '9. Décision'
+];
+
 const CRITERES_SCORE40 = [
   { piece: 'Roi / Reine', critere: 'Décideurs identifiés et triangulés', description: "Je connais qui initie le projet et qui valide les décisions." },
   { piece: 'Reine', critere: 'Enjeux connus et triangulés', description: "Je comprends les motivations du client : conformité réglementaire, sécurité, pérennité du site, disponibilité de la production, image, coûts d'assurance, etc." },
@@ -294,6 +306,166 @@ function computeControles(affaire) {
   ];
 }
 
+/* ---------------- Bloc de Reprise (pont avec ATOUT_COM / Copilot) ---------------- */
+
+const BLOC_REPRISE_SECTIONS = [
+  'IDENTIFICATION', 'ÉTAPE ATTEINTE', 'COULEUR', 'SCORE 40 COURANT',
+  'JOURNAL DES MOUVEMENTS', 'PIÈCES IDENTIFIÉES', 'JOURNAL DES REQUALIFICATIONS',
+  'MANQUES NON COMBLÉS', 'ENJEUX ÉTABLIS', 'DÉCISIONS VERROUILLÉES', 'ZONES D\'OMBRE ASSUMÉES'
+];
+
+function generateBlocReprise(a) {
+  const q = a.qualification;
+  const evals = a.score40Evaluations.slice().sort((x, y) => (x.date || '').localeCompare(y.date || ''));
+  const dernier = evals[evals.length - 1] || null;
+  const couleur = q.couleurRetenue || computeCouleurSuggeree(q).couleur;
+  const lines = [];
+
+  lines.push('BLOC DE REPRISE — ' + (a.identite.client || 'Affaire sans nom'));
+  lines.push('Produit par l\'application CAP Compétitivité le ' + todayISODate());
+  lines.push('');
+
+  lines.push('IDENTIFICATION');
+  lines.push(`Client : ${a.identite.client || '—'}`);
+  lines.push(`Site / Agence : ${a.identite.site || '—'}`);
+  lines.push(`Référence : ${a.identite.reference || '—'}`);
+  lines.push(`Montant estimé : ${a.identite.montant ? fmtMoney(a.identite.montant) : '—'}`);
+  lines.push('');
+
+  lines.push('ÉTAPE ATTEINTE');
+  lines.push(a.identite.etapeProcessus || 'Non renseignée');
+  lines.push('');
+
+  lines.push('COULEUR');
+  lines.push(`${couleur || 'Non déterminée'}${q.justification ? ' — ' + q.justification : ''}`);
+  lines.push('');
+
+  lines.push('SCORE 40 COURANT');
+  if (dernier) {
+    lines.push(`Évalué le ${dernier.date || '—'} — Total ${computeScore40Total(dernier)}/40`);
+    CRITERES_SCORE40.forEach((c, i) => lines.push(`- ${c.critere} : ${dernier.notes[i] || 0}/5`));
+  } else {
+    lines.push('Aucune évaluation enregistrée.');
+  }
+  lines.push('');
+
+  lines.push('JOURNAL DES MOUVEMENTS');
+  let mouvements = [];
+  for (let i = 1; i < evals.length; i++) {
+    CRITERES_SCORE40.forEach((c, k) => {
+      const avant = Number(evals[i - 1].notes[k]) || 0;
+      const apres = Number(evals[i].notes[k]) || 0;
+      if (avant !== apres) mouvements.push(`- ${evals[i].date || '—'} : ${c.critere} — ${avant}/5 → ${apres}/5`);
+    });
+  }
+  lines.push(...(mouvements.length ? mouvements : ['(aucun mouvement au-delà de la première évaluation)']));
+  lines.push('');
+
+  lines.push('PIÈCES IDENTIFIÉES');
+  const pieces = {};
+  a.rdvs.forEach(r => { if (r.interNom) pieces[r.interNom] = { fonction: r.interFonction, piece: r.interPiece }; });
+  const pieceLines = Object.entries(pieces).map(([nom, info]) => `- ${nom} — ${info.fonction || 'fonction non précisée'} — ${info.piece || 'pièce non attribuée'}`);
+  lines.push(...(pieceLines.length ? pieceLines : ['(aucun interlocuteur identifié)']));
+  lines.push('');
+
+  lines.push('MANQUES NON COMBLÉS');
+  if (dernier) {
+    const manques = CRITERES_SCORE40.filter((c, i) => (Number(dernier.notes[i]) || 0) <= 1).map(c => `- ${c.critere}`);
+    lines.push(...(manques.length ? manques : ['(aucun manque critique identifié sur la dernière évaluation)']));
+  } else {
+    lines.push('(pas d\'évaluation Score 40 pour établir les manques)');
+  }
+  lines.push('');
+
+  lines.push('ENJEUX ÉTABLIS');
+  const enjeux = a.rdvs.flatMap(r => r.enjeux).filter(Boolean).map(e => `- ${e}`);
+  lines.push(...(enjeux.length ? enjeux : ['(aucun enjeu renseigné)']));
+  lines.push('');
+
+  lines.push('DÉCISIONS VERROUILLÉES');
+  const verrous = computeControles(a).filter(ctrl => ctrl.conditions.every(c => c.ok)).map(ctrl => `- ${ctrl.titre} : franchi`);
+  lines.push(...(verrous.length ? verrous : ['(aucun point de contrôle franchi à ce jour)']));
+  lines.push('');
+
+  lines.push('ZONES D\'OMBRE ASSUMÉES');
+  lines.push(a.controles.rexNotes || 'Non renseignées.');
+
+  return lines.join('\n');
+}
+
+function findSectionsInText(text) {
+  const lines = text.split(/\r?\n/);
+  const sections = {};
+  let current = null;
+  lines.forEach(line => {
+    const trimmed = line.trim();
+    const upper = trimmed.toUpperCase().replace(/’/g, "'");
+    const match = BLOC_REPRISE_SECTIONS.find(s => upper === s || upper.startsWith(s));
+    if (match) {
+      current = match;
+      sections[current] = [];
+    } else if (current) {
+      sections[current].push(line);
+    }
+  });
+  return sections;
+}
+
+function parseBlocReprise(text) {
+  const sections = findSectionsInText(text);
+  const result = {
+    client: '', montant: '', couleur: '', score40Notes: null, score40Date: '',
+    pieces: [], enjeux: [], manques: [], raw: text
+  };
+
+  const idLines = sections['IDENTIFICATION'] || [];
+  idLines.forEach(line => {
+    const m = line.match(/^\s*client\s*:\s*(.+)$/i);
+    if (m && m[1].trim() !== '—') result.client = m[1].trim();
+    const mm = line.match(/^\s*montant[^:]*:\s*(.+)$/i);
+    if (mm && mm[1].trim() !== '—') result.montant = mm[1].replace(/[^\d,.]/g, '').replace(',', '.');
+  });
+
+  const coulLines = (sections['COULEUR'] || []).join(' ');
+  const coulMatch = coulLines.match(/\b(VERT|ORANGE|ROSE)\b/i);
+  if (coulMatch) result.couleur = coulMatch[1].toUpperCase();
+
+  const scoreLines = sections['SCORE 40 COURANT'] || [];
+  const notes = [];
+  scoreLines.forEach(line => {
+    const m = line.match(/(\d+(?:[.,]\d+)?)\s*\/\s*5/);
+    if (m) notes.push(Math.max(0, Math.min(5, Number(m[1].replace(',', '.')))));
+  });
+  if (notes.length >= CRITERES_SCORE40.length) {
+    result.score40Notes = notes.slice(0, CRITERES_SCORE40.length);
+  }
+  const dateMatch = scoreLines.join(' ').match(/évalué le\s*([0-9]{4}-[0-9]{2}-[0-9]{2}|[0-9]{2}\/[0-9]{2}\/[0-9]{4})/i);
+  if (dateMatch) result.score40Date = dateMatch[1];
+
+  const pieceLines = sections['PIÈCES IDENTIFIÉES'] || [];
+  pieceLines.forEach(line => {
+    const l = line.trim();
+    if (!l.startsWith('-')) return;
+    const piece = PIECES_ECHIQUIER.find(p => new RegExp('\\b' + p + '\\b', 'i').test(l));
+    const nom = l.replace(/^-\s*/, '').split(/—|-/)[0].trim();
+    if (nom) result.pieces.push({ nom, piece: piece || '' });
+  });
+
+  const enjeuxLines = sections['ENJEUX ÉTABLIS'] || [];
+  enjeuxLines.forEach(line => {
+    const l = line.trim();
+    if (l.startsWith('-')) result.enjeux.push(l.replace(/^-\s*/, ''));
+  });
+
+  const manquesLines = sections['MANQUES NON COMBLÉS'] || [];
+  manquesLines.forEach(line => {
+    const l = line.trim();
+    if (l.startsWith('-')) result.manques.push(l.replace(/^-\s*/, ''));
+  });
+
+  return result;
+}
+
 /* ---------------- Affaire ---------------- */
 
 function newAffaire() {
@@ -305,8 +477,9 @@ function newAffaire() {
     statutPipeline: 'En cours',
     identite: {
       client: '', site: '', reference: '', commercial: '',
-      montant: '', montantConfirme: '', declencheur: ''
+      montant: '', montantConfirme: '', declencheur: '', etapeProcessus: ''
     },
+    blocRepriseImporte: null,
     rdvs: [],
     score40Evaluations: [],
     qualification: newQualification(),

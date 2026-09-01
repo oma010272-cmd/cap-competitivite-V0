@@ -22,6 +22,7 @@ function buildIdentiteSheet(a) {
     ['Commercial en charge', id.commercial],
     ['Montant estimé (ordre de grandeur)', Number(id.montant) || id.montant],
     ['Montant confirmé', Number(id.montantConfirme) || id.montantConfirme],
+    ['Étape atteinte (processus commercial)', id.etapeProcessus],
     ['Déclencheur / contexte en une phrase', id.declencheur]
   ];
   return sheetFromAoa(aoa, [38, 50]);

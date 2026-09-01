@@ -386,7 +386,8 @@ const AFFAIRE_TABS = [
   { key: 'score40', label: 'Score 40' },
   { key: 'qualification', label: 'Qualification' },
   { key: 'mission', label: 'Fiche Mission' },
-  { key: 'controles', label: 'Points de contrôle' }
+  { key: 'controles', label: 'Points de contrôle' },
+  { key: 'atoutcom', label: 'ATOUT_COM' }
 ];
 
 function renderAffaireEditor(container, id, tab) {
@@ -439,7 +440,8 @@ function renderAffaireEditor(container, id, tab) {
 
   const renderers = {
     identite: renderTabIdentite, rdv: renderTabRdv, score40: renderTabScore40,
-    qualification: renderTabQualification, mission: renderTabMission, controles: renderTabControles
+    qualification: renderTabQualification, mission: renderTabMission, controles: renderTabControles,
+    atoutcom: renderTabAtoutCom
   };
   (renderers[tab] || renderTabIdentite)(panel, a, id);
 }
@@ -462,6 +464,10 @@ function renderTabIdentite(panel, a, id) {
       help: "Un ordre de grandeur suffit à ce stade — donnée réelle à confirmer plus tard avec le client."
     }),
     field({ label: 'Montant confirmé (€)', value: a.identite.montantConfirme, onChange: upd('montantConfirme'), type: 'number' }),
+    field({
+      label: 'Étape atteinte (processus commercial)', value: a.identite.etapeProcessus, onChange: upd('etapeProcessus'), type: 'select', options: ETAPES_PROCESSUS,
+      help: 'Repère où en est l\'affaire sur les 9 étapes du processus commercial — repris dans le Bloc de Reprise (onglet ATOUT_COM).'
+    }),
     field({ label: 'Déclencheur / contexte en une phrase', value: a.identite.declencheur, onChange: upd('declencheur'), type: 'textarea', span2: true })
   ]));
 }
@@ -977,6 +983,110 @@ function renderTabControles(panel, a, id) {
     onChange: v => Store.updateAffaire(id, aff => { aff.controles.rexNotes = v; })
   });
   panel.appendChild(grid([rexArea]));
+}
+
+/* ---- Onglet ATOUT_COM (pont import/export avec le Copilot ATOUT_COM) ---- */
+function renderTabAtoutCom(panel, a, id) {
+  panel.appendChild(hint("ATOUT_COM (Copilot) n'a pas de mémoire persistante entre les sessions : il produit un « Bloc de Reprise » en texte que vous devez conserver vous-même. Cette application peut jouer ce rôle — exportez un bloc à coller dans Copilot en début de session, ou importez le bloc produit par Copilot en fin de session pour mettre à jour cette affaire."));
+
+  panel.appendChild(sectionTitle('Exporter vers ATOUT_COM'));
+  panel.appendChild(hint("Copiez ce texte et collez-le dans votre conversation Copilot pour lui redonner le contexte de l'affaire."));
+  const exportArea = h('textarea', { readonly: true, style: 'width:100%;min-height:240px;font-family:monospace;font-size:12px;' });
+  exportArea.value = generateBlocReprise(a);
+  panel.appendChild(exportArea);
+  const exportActions = h('div', { style: 'display:flex;gap:8px;margin-top:8px' });
+  exportActions.appendChild(h('button', {
+    class: 'btn btn-light btn-sm',
+    onclick: async () => {
+      try { await navigator.clipboard.writeText(exportArea.value); showToast('Bloc de Reprise copié.'); }
+      catch (e) { exportArea.select(); showToast('Copie automatique indisponible — texte sélectionné, utilisez Ctrl+C.'); }
+    }
+  }, 'Copier'));
+  exportActions.appendChild(h('button', {
+    class: 'btn btn-light btn-sm',
+    onclick: () => saveFile(`bloc-reprise-${(a.identite.client || 'affaire').replace(/[^a-z0-9]+/gi, '_')}.txt`, exportArea.value, 'text/plain')
+  }, 'Télécharger (.txt)'));
+  panel.appendChild(exportActions);
+
+  panel.appendChild(sectionTitle('Importer depuis ATOUT_COM'));
+  panel.appendChild(hint("Collez ici le Bloc de Reprise généré par Copilot en fin de session, puis cliquez sur Analyser. L'extraction est automatique mais reste indicative (c'est du texte libre généré par une IA) — vérifiez avant d'appliquer quoi que ce soit."));
+  const importArea = h('textarea', { placeholder: 'Collez le Bloc de Reprise ici…', style: 'width:100%;min-height:180px;font-family:monospace;font-size:12px;' });
+  panel.appendChild(importArea);
+  const previewBox = h('div', { style: 'margin-top:12px' });
+  panel.appendChild(h('div', { style: 'margin-top:8px' }, h('button', {
+    class: 'btn btn-primary btn-sm',
+    onclick: () => renderImportPreview(previewBox, Store.getAffaire(id), id, parseBlocReprise(importArea.value))
+  }, 'Analyser')));
+  panel.appendChild(previewBox);
+
+  if (a.blocRepriseImporte) {
+    panel.appendChild(sectionTitle('Dernier bloc importé (archive)'));
+    panel.appendChild(hint(`Importé le ${fmtDate(a.blocRepriseImporte.importedAt)}`));
+    const archiveArea = h('textarea', { readonly: true, style: 'width:100%;min-height:120px;font-family:monospace;font-size:12px;' });
+    archiveArea.value = a.blocRepriseImporte.raw;
+    panel.appendChild(archiveArea);
+  }
+}
+
+function renderImportPreview(box, a, id, parsed) {
+  clear(box);
+  const items = [];
+  if (parsed.client) items.push(['Client détecté', parsed.client]);
+  if (parsed.montant) items.push(['Montant détecté', parsed.montant]);
+  if (parsed.couleur) items.push(['Couleur détectée', parsed.couleur]);
+  if (parsed.score40Notes) items.push(['Score 40 détecté', parsed.score40Notes.join(', ') + ` (total ${parsed.score40Notes.reduce((s, n) => s + n, 0)}/40)`]);
+  if (parsed.pieces.length) items.push(['Pièces identifiées', parsed.pieces.map(p => `${p.nom} (${p.piece || '?'})`).join(', ')]);
+  if (parsed.enjeux.length) items.push(['Enjeux', parsed.enjeux.join(' • ')]);
+  if (parsed.manques.length) items.push(['Manques', parsed.manques.join(' • ')]);
+
+  if (!items.length) {
+    box.appendChild(h('div', { class: 'empty-state' }, "Rien d'exploitable n'a été détecté dans ce texte — vérifiez qu'il suit bien la structure du Bloc de Reprise (rubriques IDENTIFICATION, COULEUR, SCORE 40 COURANT…)."));
+    return;
+  }
+
+  const table = h('table', { class: 'data-table' });
+  items.forEach(([label, val]) => table.appendChild(h('tr', {}, [h('td', { class: 'label-cell' }, label), h('td', {}, val)])));
+  box.appendChild(h('div', { class: 'table-scroll' }, table));
+
+  const actions = h('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;margin-top:10px' });
+  if (parsed.couleur) {
+    actions.appendChild(h('button', {
+      class: 'btn btn-light btn-sm',
+      onclick: () => { Store.updateAffaire(id, aff => { aff.qualification.couleurRetenue = parsed.couleur; }); showToast('Couleur appliquée.'); render(); }
+    }, 'Appliquer la couleur'));
+  }
+  if (parsed.score40Notes) {
+    actions.appendChild(h('button', {
+      class: 'btn btn-light btn-sm',
+      onclick: () => {
+        const ev = Store.addScore40Evaluation(id);
+        Store.updateAffaire(id, aff => {
+          const e = aff.score40Evaluations.find(x => x.id === ev.id);
+          e.notes = parsed.score40Notes.slice();
+          e.date = parsed.score40Date || todayISODate();
+          e.commentaire = 'Importé depuis un Bloc de Reprise ATOUT_COM.';
+        });
+        showToast('Nouvelle évaluation Score 40 créée.'); render();
+      }
+    }, 'Créer une évaluation Score 40'));
+  }
+  if (parsed.client && !a.identite.client) {
+    actions.appendChild(h('button', {
+      class: 'btn btn-light btn-sm',
+      onclick: () => {
+        Store.updateAffaire(id, aff => { aff.identite.client = parsed.client; if (parsed.montant) aff.identite.montant = parsed.montant; });
+        showToast('Identité mise à jour.'); render();
+      }
+    }, "Appliquer à l'identité"));
+  }
+  actions.appendChild(h('button', {
+    class: 'btn btn-light btn-sm',
+    onclick: () => {
+      Store.updateAffaire(id, aff => { aff.blocRepriseImporte = { raw: parsed.raw, importedAt: nowISO() }; });
+      showToast('Texte archivé sur cette affaire.'); render();
+    }
+  }, 'Archiver ce texte sur l’affaire'));
+  box.appendChild(actions);
 }
 
 /* ==================================================================
