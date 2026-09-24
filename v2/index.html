@@ -2,46 +2,779 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>♟ CAP Compétitivité — Gestion des affaires</title>
-<link rel="stylesheet" href="css/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>♟ CAP Compétitivité — Convention 2 octobre</title>
+<style>
+  :root{
+    --navy:#13224B; --navy-light:#1d3266; --gold:#E3A92F; --orange:#DC8C1D; --rose:#CE547D;
+    --vert-bg:#DCEEE0; --vert-fg:#1B7A3D;
+    --orange-bg:#FBE7CE; --orange-fg:#B8600F;
+    --rose-bg:#F6DCE6; --rose-fg:#A83D63;
+    --nogo-bg:#E5E5E5; --nogo-fg:#555;
+    --bg:#F7F8FA; --card:#FFFFFF; --border:#DDE1E8; --text:#1A2233; --muted:#6B7280;
+    box-sizing:border-box;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1420; --card:#161D2E; --border:#2A3350; --text:#E7EAF2; --muted:#9AA3B5;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1420; --card:#161D2E; --border:#2A3350; --text:#E7EAF2; --muted:#9AA3B5;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; font-family:"Segoe UI", Arial, sans-serif; background:var(--bg); color:var(--text);
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  header{
+    background:var(--navy); color:#fff; padding:14px 20px; padding-top:calc(14px + env(safe-area-inset-top,0px));
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap; position:sticky; top:0; z-index:20;
+    border-bottom:3px solid var(--gold);
+  }
+  header .logo{font-size:22px;}
+  header h1{font-size:16px; margin:0; font-weight:600; letter-spacing:.2px;}
+  header .sub{font-size:11px; color:#C9D2E8; margin-top:1px;}
+  header .spacer{flex:1;}
+  .table-badge{
+    background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.3); border-radius:6px;
+    padding:6px 10px; font-size:13px; display:flex; align-items:center; gap:8px;
+  }
+  .table-badge input{
+    background:transparent; border:none; color:#fff; font-size:13px; font-weight:600; width:110px;
+    outline:none;
+  }
+  .table-badge input::placeholder{color:#C9D2E8;}
+  .animateur-link{
+    background:transparent; border:1px solid rgba(255,255,255,.35); color:#C9D2E8; border-radius:6px;
+    padding:6px 10px; font-size:12px; cursor:pointer; font-family:inherit; white-space:nowrap;
+  }
+  .animateur-link:hover{color:#fff; border-color:#fff;}
+  nav.steps{
+    display:flex; gap:4px; overflow-x:auto; background:var(--navy-light); padding:0 14px;
+    -webkit-overflow-scrolling:touch;
+  }
+  nav.steps button{
+    background:transparent; border:none; color:#C9D2E8; padding:10px 12px; font-size:12.5px;
+    white-space:nowrap; cursor:pointer; border-bottom:3px solid transparent; font-family:inherit;
+  }
+  nav.steps button.active{color:#fff; border-bottom-color:var(--gold); font-weight:600;}
+  nav.steps button .n{
+    display:inline-block; width:18px; height:18px; line-height:18px; text-align:center; border-radius:50%;
+    background:rgba(255,255,255,.15); font-size:10.5px; margin-right:6px;
+  }
+  nav.steps button.active .n{background:var(--gold); color:var(--navy);}
+  main{max-width:980px; margin:0 auto; padding:20px 16px 60px;}
+  .card{
+    background:var(--card); border:1px solid var(--border); border-radius:10px; padding:20px;
+    margin-bottom:18px;
+  }
+  .card h2{margin:0 0 4px; font-size:19px; color:var(--navy);}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .card h2{color:#EFCB74;}}
+  :root[data-theme="dark"] .card h2{color:#EFCB74;}
+  .card .meta{font-size:12.5px; color:var(--orange); font-weight:600; margin-bottom:14px;}
+  label{display:block; font-size:12.5px; font-weight:600; color:var(--muted); margin:12px 0 4px;}
+  input[type=text], input[type=number], textarea, select{
+    width:100%; padding:9px 10px; border:1px solid var(--border); border-radius:6px;
+    font-family:inherit; font-size:14px; background:var(--card); color:var(--text);
+  }
+  textarea{resize:vertical; min-height:70px;}
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+  .grid2{display:grid; grid-template-columns:repeat(2,1fr); gap:12px;}
+  @media (max-width:640px){.grid3{grid-template-columns:1fr;} .grid2{grid-template-columns:1fr;}}
+  .pill{
+    display:inline-block; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:700;
+  }
+  .kpi{
+    display:flex; gap:14px; flex-wrap:wrap; margin-top:14px;
+  }
+  .kpi .box{
+    flex:1; min-width:140px; background:var(--bg); border:1px solid var(--border); border-radius:8px;
+    padding:12px 14px;
+  }
+  .kpi .box .v{font-size:20px; font-weight:700; color:var(--navy);}
+  :root[data-theme="dark"] .kpi .box .v{color:#EFCB74;}
+  .kpi .box .l{font-size:11.5px; color:var(--muted); margin-top:2px;}
+  table.terr{width:100%; border-collapse:collapse; font-size:12.5px;}
+  table.terr th{
+    background:var(--navy); color:#fff; padding:7px 6px; text-align:left; position:sticky; top:0;
+  }
+  table.terr td{padding:6px; border-bottom:1px solid var(--border); vertical-align:top;}
+  table.terr tr:hover td{background:var(--bg);}
+  .terr-wrap{overflow-x:auto; border:1px solid var(--border); border-radius:8px;}
+  select.couleur-select{font-weight:700; min-width:100px;}
+  select.couleur-select[data-c="VERT"]{background:var(--vert-bg); color:var(--vert-fg);}
+  select.couleur-select[data-c="ORANGE"]{background:var(--orange-bg); color:var(--orange-fg);}
+  select.couleur-select[data-c="ROSE"]{background:var(--rose-bg); color:var(--rose-fg);}
+  select.couleur-select[data-c="NO GO"]{background:var(--nogo-bg); color:var(--nogo-fg);}
+  .btn{
+    background:var(--gold); color:var(--navy); border:none; border-radius:6px; padding:9px 16px;
+    font-weight:700; font-size:13.5px; cursor:pointer; font-family:inherit;
+  }
+  .btn.secondary{background:transparent; color:var(--navy); border:1.5px solid var(--navy);}
+  :root[data-theme="dark"] .btn.secondary{color:#EFCB74; border-color:#EFCB74;}
+  .btn-row{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;}
+  .score-row{display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border);}
+  .score-row:last-child{border-bottom:none;}
+  .score-row .lbl{flex:1; font-size:13.5px;}
+  .score-row select{width:70px;}
+  .barometre{
+    margin-top:16px; padding:14px; border-radius:8px; font-size:14px; font-weight:600; text-align:center;
+  }
+  .bar-stop{background:var(--rose-bg); color:var(--rose-fg);}
+  .bar-warn{background:var(--orange-bg); color:var(--orange-fg);}
+  .bar-go{background:var(--vert-bg); color:var(--vert-fg);}
+  .swot-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media (max-width:640px){.swot-grid{grid-template-columns:1fr;}}
+  .swot-cell{border-radius:8px; padding:12px;}
+  .swot-cell h3{margin:0 0 8px; font-size:13px; text-transform:uppercase; letter-spacing:.4px;}
+  .swot-f{background:var(--vert-bg);} .swot-f h3{color:var(--vert-fg);}
+  .swot-w{background:var(--rose-bg);} .swot-w h3{color:var(--rose-fg);}
+  .swot-o{background:var(--orange-bg);} .swot-o h3{color:var(--orange-fg);}
+  .swot-t{background:var(--nogo-bg);} .swot-t h3{color:#444;}
+  .swot-cell textarea{background:rgba(255,255,255,.55); border:1px solid rgba(0,0,0,.08);}
+  .article{
+    background:var(--bg); border-left:4px solid var(--orange); padding:14px 16px; border-radius:0 8px 8px 0;
+    font-size:14px; line-height:1.6;
+  }
+  .article h3{margin-top:0; color:var(--navy); font-size:16px;}
+  .reperes-wrap{overflow-x:auto; border:1px solid var(--border); border-radius:8px; margin-top:14px;}
+  table.reperes{width:100%; border-collapse:collapse; font-size:12.5px;}
+  table.reperes th{background:var(--navy-light); color:#fff; padding:7px 8px; text-align:left;}
+  table.reperes td{padding:7px 8px; border-bottom:1px solid var(--border); vertical-align:top;}
+  table.reperes tr:last-child td{border-bottom:none;}
+  .save-note{font-size:11.5px; color:var(--muted); margin-top:10px;}
+  .count-nogo{font-weight:700;}
+  .count-nogo.ok{color:var(--vert-fg);} .count-nogo.low{color:var(--rose-fg);}
+  .bilan-table-wrap{overflow-x:auto; border:1px solid var(--border); border-radius:8px; margin-top:14px;}
+  table.bilan{width:100%; border-collapse:collapse; font-size:12.5px;}
+  table.bilan th{background:var(--navy); color:#fff; padding:7px 8px; text-align:left; white-space:nowrap;}
+  table.bilan td{padding:7px 8px; border-bottom:1px solid var(--border); white-space:nowrap;}
+  .drop-zone{
+    border:2px dashed var(--border); border-radius:10px; padding:26px; text-align:center; color:var(--muted);
+    font-size:13.5px; cursor:pointer;
+  }
+  .drop-zone:hover{border-color:var(--gold); color:var(--text);}
+  footer{text-align:center; font-size:11.5px; color:var(--muted); padding:24px 16px 40px;}
+</style>
 </head>
 <body>
-<div id="app">
-  <header class="topbar">
-    <div class="topbar-brand">
-      <span class="topbar-logo">♟</span>
+
+<header>
+  <div class="logo">♟</div>
+  <div>
+    <h1>CAP Compétitivité — Convention 2 octobre</h1>
+    <div class="sub">Exercice fil rouge · LA FRITE DORÉE</div>
+  </div>
+  <div class="spacer"></div>
+  <button class="animateur-link" id="btnAnimateur" type="button">Vue animateur (bilan)</button>
+  <div class="table-badge">
+    Table&nbsp;:
+    <input id="tableName" type="text" placeholder="ex. Table 3" />
+  </div>
+</header>
+
+<nav class="steps" id="stepsNav"></nav>
+
+<main id="app"></main>
+
+<footer>Données stockées localement dans ce navigateur, par table — pensez à « Exporter » régulièrement pour sauvegarder, et à le faire impérativement avant la clôture pour la vue animateur.</footer>
+
+<script>
+/* =========================================================================
+   CAP COMPÉTITIVITÉ — Module « Convention 2 octobre » (Note de cadrage v3)
+   Autonome, aucune dépendance externe. Stockage 100% local (localStorage),
+   sur le même principe que le reste de l'application cap-competitivite-V0.
+   ========================================================================= */
+
+const STORAGE_PREFIX = "capcompet_conv_2oct_";
+
+function tableKey(){
+  const t = (document.getElementById("tableName").value || "defaut").trim().toLowerCase().replace(/\s+/g,"_");
+  return STORAGE_PREFIX + t;
+}
+function loadState(){
+  try{ return JSON.parse(localStorage.getItem(tableKey())) || {}; }catch(e){ return {}; }
+}
+function saveState(state){
+  const nom = (document.getElementById("tableName").value || "").trim();
+  state.meta = Object.assign({}, state.meta, {table: nom, savedAt: new Date().toISOString()});
+  localStorage.setItem(tableKey(), JSON.stringify(state));
+}
+let STATE = {};
+
+function initTableName(){
+  const saved = localStorage.getItem(STORAGE_PREFIX + "_current_table");
+  if(saved) document.getElementById("tableName").value = saved;
+  document.getElementById("tableName").addEventListener("input", ()=>{
+    localStorage.setItem(STORAGE_PREFIX + "_current_table", document.getElementById("tableName").value);
+    STATE = loadState();
+    render();
+  });
+}
+
+/* ---------------------------------------------------------------------
+   Données du dossier territoire (20 dossiers) — caractéristiques brutes
+   uniquement. Aucune classification cible ni commentaire n'est inclus
+   ici : cette page est destinée aux stagiaires, le corrigé reste dans
+   le classeur Excel de l'animateur. Le dossier n°9 (LA FRITE DORÉE)
+   reste sous son identité réelle dès l'étape 2, à la demande de
+   l'animateur — c'est la même identité que celle révélée à l'étape 3
+   par le dossier de presse.
+   --------------------------------------------------------------------- */
+const DOSSIER_TERRITOIRE = [
+  {n:1,  societe:"CHIMINOR INDUSTRIES", secteur:"INDUSTRIE", ouvrage:"USINE", pc:"EN COURS", icpe:"OUI", travaux:"EXTENSION", estimation:300000, marche:"GRES A GRES", historique:"CLIENT", relation:"BONNE", be:"ALLIE", maintenance:"AXI", concurrence:"Faible"},
+  {n:2,  societe:"AEROSTRUCT PICARDIE", secteur:"AERONAUTIQUE", ouvrage:"USINE", pc:"NON", icpe:"NON", travaux:"TRENTENAIRE", estimation:350000, marche:"PUBLIC", historique:"CLIENT NATIONAL", relation:"BONNE", be:"OUI", maintenance:"AXI", concurrence:"Faible"},
+  {n:3,  societe:"HOTEL LES TERRASSES DU LAC", secteur:"TERTIAIRE", ouvrage:"HÔTEL", pc:"NON", icpe:"NON", travaux:"EXISTANT", estimation:280000, marche:"GRES A GRES", historique:"CLIENT MAINTENANCE", relation:"BONNE", be:"ALLIE", maintenance:"AXI", concurrence:"Moyenne"},
+  {n:4,  societe:"SYVALOR ENERGIE NORD", secteur:"CENTRE VALORISATION", ouvrage:"USINE", pc:"EN COURS", icpe:"OUI", travaux:"EXTENSION", estimation:420000, marche:"PUBLIC", historique:"CLIENT", relation:"BONNE", be:"ALLIE", maintenance:"AXI", concurrence:"Faible"},
+  {n:5,  societe:"PHARMALIA LABORATOIRES", secteur:"PHARMACEUTIQUE", ouvrage:"USINE", pc:"OUI", icpe:"OUI", travaux:"NEUF", estimation:380000, marche:"GRES A GRES", historique:"CLIENT NATIONAL", relation:"BONNE", be:"OUI", maintenance:"AXI", concurrence:"Moyenne"},
+  {n:6,  societe:"GALERIES DU CENTRE", secteur:"COMMERCE", ouvrage:"BUREAUX", pc:"NON", icpe:"NON", travaux:"EXISTANT", estimation:270000, marche:"GRES A GRES", historique:"CLIENT", relation:"BONNE", be:"OUI", maintenance:"AXI", concurrence:"Faible"},
+  {n:7,  societe:"SIDERMEX METALLURGIE", secteur:"INDUSTRIE", ouvrage:"USINE", pc:"OUI", icpe:"OUI", travaux:"NEUF", estimation:900000, marche:"EG", historique:"SO", relation:"NEUTRE", be:"?", maintenance:"SO", concurrence:"Forte"},
+  {n:8,  societe:"AEROPORT REGIONAL DE VERNAY", secteur:"AERONAUTIQUE", ouvrage:"AEROPORT", pc:"EN COURS", icpe:"NON", travaux:"EXTENSION", estimation:650000, marche:"CONTRACTANT", historique:"ANCIEN CLIENT", relation:"NEUTRE", be:"OUI", maintenance:"AUTRE", concurrence:"Moyenne"},
+  {n:9,  societe:"LA FRITE DORÉE", secteur:"INDUSTRIE", ouvrage:"USINE", pc:"OUI", icpe:"OUI", travaux:"EXISTANT", estimation:1200000, marche:"GRES A GRES", historique:"SO", relation:"NEUTRE", be:"?", maintenance:"SO", concurrence:"Forte"},
+  {n:10, societe:"BUREAUX PLAZA CONFLUENCE", secteur:"TERTIAIRE", ouvrage:"BUREAUX", pc:"NON", icpe:"NON", travaux:"EXISTANT", estimation:500000, marche:"CONTRACTANT", historique:"ANCIEN CLIENT", relation:"NEUTRE", be:"OUI", maintenance:"AUTRE", concurrence:"Moyenne"},
+  {n:11, societe:"HOTEL AZURA RESORT", secteur:"TERTIAIRE", ouvrage:"HÔTEL", pc:"OUI", icpe:"NON", travaux:"NEUF", estimation:800000, marche:"GRES A GRES", historique:"SO", relation:"NEUTRE", be:"ALLIE", maintenance:"SO", concurrence:"Forte"},
+  {n:12, societe:"BIOTECH ANALYSE LABORATOIRE", secteur:"LABORATOIRE", ouvrage:"ERP", pc:"EN COURS", icpe:"OUI", travaux:"EXTENSION", estimation:650000, marche:"CONTRACTANT", historique:"ANCIEN CLIENT", relation:"NEUTRE", be:"OUI", maintenance:"AUTRE", concurrence:"Moyenne"},
+  {n:13, societe:"AVIATECH COMPOSANTS", secteur:"AERONAUTIQUE", ouvrage:"USINE", pc:"EN COURS", icpe:"NON", travaux:"EXTENSION", estimation:600000, marche:"CONTRACTANT", historique:"SO", relation:"NEUTRE", be:"OUI", maintenance:"SO", concurrence:"Moyenne"},
+  {n:14, societe:"PHARMEXA PRODUCTION", secteur:"PHARMACEUTIQUE", ouvrage:"USINE", pc:"NON", icpe:"OUI", travaux:"EXISTANT", estimation:580000, marche:"EG", historique:"SO", relation:"NEUTRE", be:"?", maintenance:"SO", concurrence:"Forte"},
+  {n:15, societe:"NORDLOG ENTREPOSAGE", secteur:"LOGISTIQUE", ouvrage:"ENTREPÔT", pc:"OUI", icpe:"OUI", travaux:"NEUF", estimation:290000, marche:"PUBLIC", historique:"SO", relation:"NEUTRE", be:"NON", maintenance:"SO", concurrence:"Forte"},
+  {n:16, societe:"PARKING METROPOLE SUD", secteur:"PARKING", ouvrage:"PARKING", pc:"OUI", icpe:"NON", travaux:"NEUF", estimation:420000, marche:"EG", historique:"CLIENT NATIONAL", relation:"NEUTRE", be:"NON", maintenance:"SO", concurrence:"Moyenne"},
+  {n:17, societe:"CENTRE TECHNIQUE ATOMEA", secteur:"NUCLEAIRE", ouvrage:"MAGASIN", pc:"NON", icpe:"OUI", travaux:"EXISTANT", estimation:750000, marche:"CONTRACTANT", historique:"SO", relation:"NEUTRE", be:"?", maintenance:"AUTRE", concurrence:"Faible"},
+  {n:18, societe:"PARKING SILO GARE CENTRALE", secteur:"PARKING", ouvrage:"PARKING", pc:"NON", icpe:"NON", travaux:"EXISTANT", estimation:150000, marche:"GRES A GRES", historique:"SO", relation:"NEUTRE", be:"NON", maintenance:"SO", concurrence:"Forte"},
+  {n:19, societe:"EUROFRET LOGISTIQUE PLATEFORME", secteur:"LOGISTIQUE", ouvrage:"ENTREPÔT", pc:"OUI", icpe:"OUI", travaux:"NEUF", estimation:3000000, marche:"CONTRACTANT", historique:"SO", relation:"NEUTRE", be:"NON", maintenance:"SO", concurrence:"Forte"},
+  {n:20, societe:"FORGES ET MECANIQUE DE L'EST", secteur:"INDUSTRIE", ouvrage:"USINE", pc:"NON", icpe:"OUI", travaux:"TRENTENAIRE", estimation:620000, marche:"EG", historique:"ANCIEN CLIENT", relation:"MAUVAISE", be:"HOSTILE", maintenance:"AUTRE", concurrence:"Moyenne"},
+];
+const DOSSIER_FIL_ROUGE_N = 9;
+
+const ARTICLE_PRESSE = {
+  titre: "LA FRITE DORÉE annonce 4 M€ de travaux sur son site du Nord, sous surveillance renforcée de la DREAL",
+  source: "LA VOIX INDUSTRIELLE DES HAUTS-DE-FRANCE — Édition économique",
+  corps: [
+    "[Ville], le 18 septembre 2026 — Le fabricant de produits à base de pommes de terre LA FRITE DORÉE a confirmé lundi un plan d'investissement de 4 M€ sur son site de production du Nord, qui assure à lui seul près de 50 % de la production nationale du groupe. Un outil industriel qualifié de « stratégique » par la direction, dont l'arrêt prolongé aurait des répercussions directes sur l'ensemble des contrats de distribution du groupe en France. L'annonce fait suite à un contrôle de la DREAL en juin, qui avait pointé plusieurs écarts de conformité incendie sur les zones de stockage et de friture, classées ICPE.",
+    "Le site tourne en 3×8, y compris la nuit, pour honorer des contrats de grande distribution dont l'un des noms circule déjà dans la presse régionale. « Toute intervention devra composer avec la continuité de production — on ne peut pas se permettre un arrêt de ligne, surtout sur ce site », a indiqué à notre rédaction un cadre du site, sous couvert d'anonymat, sans préciser à quel horizon les travaux devraient être achevés ni le montant exact fléché vers la mise en conformité incendie dans l'enveloppe globale de 4 M€.",
+    "Contactée, la direction industrielle du groupe confirme qu'un appel à plusieurs prestataires est en cours, sans donner davantage de détails sur le calendrier de sélection. Selon nos informations, au moins deux acteurs régionaux de la protection incendie auraient déjà visité le site.",
+    "LA FRITE DORÉE, fondée il y a vingt-deux ans, n'a jamais travaillé avec Axima Sécurité Incendie."
+  ]
+};
+
+const SCORE_CRITERES = [
+  "Le déclencheur et le commanditaire du projet sont connus et triangulés",
+  "Les enjeux sont connus et triangulés",
+  "Il y a un budget alloué et triangulé",
+  "Le timing du projet est connu et triangulé",
+  "J'ai identifié et j'ai accès à toutes les pièces (espace de décision)",
+  "J'ai un Cheval (sponsor interne) identifié et actif",
+  "J'ai listé les suppositions et j'ai les réponses",
+  "Notre offre est adaptée à leurs enjeux"
+];
+
+/* Repères pour l'analyse de l'article — matériel stagiaire (pas le corrigé),
+   tel que fourni dans l'onglet « Fil rouge — Dossier de presse ». */
+const REPERES_ARTICLE = [
+  ["Déclencheur / commanditaire triangulés", "Déclencheur clair (contrôle DREAL) ; commanditaire encore flou (« un cadre du site », anonyme)"],
+  ["Enjeux triangulés", "Enjeu chiffré et explicite (50 % de la production nationale), mais formulé par la direction groupe, pas encore par un interlocuteur direct"],
+  ["Budget alloué et triangulé", "Enveloppe globale connue (4 M€) ; part fléchée vers l'incendie non précisée"],
+  ["Timing connu et triangulé", "Aucune date donnée — silence notable"],
+  ["Pièces identifiées, accès", "Aucun nom, aucun titre — juste « un cadre » et « la direction industrielle »"],
+  ["Cheval (sponsor interne) actif", "Rien ne l'indique — à vérifier entièrement"],
+  ["Suppositions listées", "Concurrence confirmée (2 acteurs déjà passés sur site)"],
+  ["Offre adaptée aux enjeux", "Impossible à évaluer à ce stade — aucun contact direct encore établi"],
+];
+
+const STEPS = [
+  {id:"pac", label:"1 · PAC"},
+  {id:"territoire", label:"2 · Prospection"},
+  {id:"score", label:"3 · Score Échiquier"},
+  {id:"gonogo", label:"4 · Go/No-Go"},
+  {id:"agent", label:"5 · Entretien agent"},
+  {id:"swot", label:"6 · SWOT"},
+  {id:"mission", label:"7 · Fiche Mission"},
+];
+
+let currentStep = "pac";
+let animateurMode = false;
+
+/* ---------------------- Rendu de la navigation ---------------------- */
+function renderNav(){
+  const nav = document.getElementById("stepsNav");
+  nav.innerHTML = "";
+  if(animateurMode){ nav.style.display = "none"; return; }
+  nav.style.display = "flex";
+  STEPS.forEach((s, i)=>{
+    const b = document.createElement("button");
+    b.className = s.id === currentStep ? "active" : "";
+    b.innerHTML = `<span class="n">${i+1}</span>${s.label.split(" · ")[1]}`;
+    b.onclick = ()=>{ currentStep = s.id; render(); window.scrollTo({top:0, behavior:"smooth"}); };
+    nav.appendChild(b);
+  });
+}
+
+/* ---------------------- Étape 1 : PAC -------------------------------- */
+function calcPAC(v){
+  const OBJECTIF = 6000000, ETP = 2.5, H_MOIS = 150, RENDEMENT = 0.8, NB_MOIS = 12;
+  const COEF_VERT = 1.2, FACTEUR_ROSE = 1.3;
+  const MARGES = {V:0.06, O:0.04, R:0.02};
+  const RESSOURCES = ETP * H_MOIS * RENDEMENT * NB_MOIS; // 3600 h/an
+  const C10 = (8000000/12) * NB_MOIS; // = 8 000 000
+  const C11 = ETP * C10;
+  const baseEurH = C11 / RESSOURCES; // Moy €chiffrés/h
+
+  const objV = v.pv/100 * OBJECTIF, objO = v.po/100 * OBJECTIF, objR = v.pr/100 * OBJECTIF;
+  const tV = v.tv/100, tO = v.to/100, tR = v.tr/100;
+  const volV = tV ? objV/tV : 0, volO = tO ? objO/tO : 0, volR = tR ? objR/tR : 0;
+
+  const ehV = baseEurH * COEF_VERT;
+  const ehR = FACTEUR_ROSE * baseEurH;
+  const hV = ehV ? volV/ehV : 0;
+  const hR = ehR ? volR/ehR : 0;
+  const hO = Math.max(RESSOURCES - hV - hR, 0.0001);
+  const ehO = volO / hO;
+
+  const mnV = MARGES.V * objV, mnO = MARGES.O * objO, mnR = MARGES.R * objR;
+  const mnTotal = mnV + mnO + mnR;
+
+  return {RESSOURCES, ehV, ehO, ehR, hV, hO, hR, objV, objO, objR, mnV, mnO, mnR, mnTotal};
+}
+
+function stepPAC(){
+  const s = STATE.pac || {pv:35, po:48, pr:17, tv:50, to:30, tr:20};
+  const totalPct = Number(s.pv)+Number(s.po)+Number(s.pr);
+  const r = calcPAC(s);
+  return `
+  <div class="card">
+    <h2>Étape 1 — Plan d'Action Commercial</h2>
+    <div class="meta">6 valeurs à renseigner · calcul en direct de la marge nette</div>
+    <div class="grid3">
+      <div><label>% Volume VERT</label><input type="number" min="0" max="100" id="pv" value="${s.pv}"></div>
+      <div><label>% Volume ORANGE</label><input type="number" min="0" max="100" id="po" value="${s.po}"></div>
+      <div><label>% Volume ROSE</label><input type="number" min="0" max="100" id="pr" value="${s.pr}"></div>
+      <div><label>Taux transfo. VERT (%)</label><input type="number" min="0" max="100" id="tv" value="${s.tv}"></div>
+      <div><label>Taux transfo. ORANGE (%)</label><input type="number" min="0" max="100" id="to" value="${s.to}"></div>
+      <div><label>Taux transfo. ROSE (%)</label><input type="number" min="0" max="100" id="tr" value="${s.tr}"></div>
+    </div>
+    ${totalPct !== 100 ? `<div class="save-note" style="color:var(--rose-fg); font-weight:700;">⚠ La somme des % de volume fait ${totalPct}% — elle doit faire 100%.</div>` : ""}
+    <div class="kpi">
+      <div class="box"><div class="v">${Math.round(r.mnTotal).toLocaleString("fr-FR")} €</div><div class="l">Marge nette totale estimée</div></div>
+      <div class="box"><div class="v">${Math.round(r.RESSOURCES)} h</div><div class="l">Capacité de chiffrage (an)</div></div>
+      <div class="box"><div class="v">${Math.round(r.hV)} / ${Math.round(r.hO)} / ${Math.round(r.hR)}</div><div class="l">Heures VERT / ORANGE / ROSE</div></div>
+    </div>
+    <div class="save-note">Comparez votre marge nette avec celle des autres tables au tableau de bord de clôture.</div>
+  </div>`;
+}
+function bindPAC(){
+  ["pv","po","pr","tv","to","tr"].forEach(id=>{
+    document.getElementById(id).addEventListener("input", e=>{
+      const s = STATE.pac || {};
+      s[id] = e.target.value === "" ? 0 : Number(e.target.value);
+      STATE.pac = s; saveState(STATE);
+      document.getElementById("app").innerHTML = stepPAC();
+      bindPAC();
+    });
+  });
+}
+
+/* ---------------------- Étape 2 : Dossier territoire ------------------ */
+function stepTerritoire(){
+  const choix = STATE.territoire || {};
+  const rows = DOSSIER_TERRITOIRE.map(d=>{
+    const c = choix[d.n] || "";
+    return `<tr>
+      <td>${d.n}</td>
+      <td>${d.societe}</td>
+      <td>${d.secteur}</td>
+      <td>${d.ouvrage}</td>
+      <td>${d.pc}</td>
+      <td>${d.icpe}</td>
+      <td>${d.travaux}</td>
+      <td>${d.estimation.toLocaleString("fr-FR")} €</td>
+      <td>${d.marche}</td>
+      <td>${d.historique}</td>
+      <td>${d.relation}</td>
+      <td>${d.be}</td>
+      <td>${d.maintenance}</td>
+      <td>${d.concurrence}</td>
+      <td>
+        <select class="couleur-select" data-n="${d.n}" data-c="${c}">
+          <option value="" ${c===""?"selected":""}>—</option>
+          <option value="VERT" ${c==="VERT"?"selected":""}>VERT</option>
+          <option value="ORANGE" ${c==="ORANGE"?"selected":""}>ORANGE</option>
+          <option value="ROSE" ${c==="ROSE"?"selected":""}>ROSE</option>
+          <option value="NO GO" ${c==="NO GO"?"selected":""}>NO GO</option>
+        </select>
+      </td>
+    </tr>`;
+  }).join("");
+  const nogoCount = Object.values(choix).filter(v=>v==="NO GO").length;
+  const total = DOSSIER_TERRITOIRE.reduce((a,d)=>a+d.estimation,0);
+  return `
+  <div class="card">
+    <h2>Étape 2 — Prospection & hiérarchisation</h2>
+    <div class="meta">20 dossiers · potentiel ≈ ${total.toLocaleString("fr-FR")} € sur 6 mois</div>
+    <div class="terr-wrap">
+      <table class="terr">
+        <thead><tr>
+          <th>N°</th><th>Société</th><th>Secteur</th><th>Ouvrage</th><th>PC</th><th>ICPE</th>
+          <th>Travaux</th><th>Estimation</th><th>Marché</th><th>Historique</th><th>Relation</th>
+          <th>BE</th><th>Maintenance</th><th>Concurrence</th><th>Décision</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div class="kpi">
+      <div class="box"><div class="v count-nogo ${nogoCount>=5?"ok":"low"}">${nogoCount} / 5</div><div class="l">Dossiers en NO GO (minimum imposé : 5, chacun justifié à l'oral)</div></div>
+    </div>
+  </div>`;
+}
+function bindTerritoire(){
+  document.querySelectorAll(".couleur-select").forEach(sel=>{
+    sel.addEventListener("change", e=>{
+      const n = e.target.dataset.n;
+      STATE.territoire = STATE.territoire || {};
+      STATE.territoire[n] = e.target.value;
+      saveState(STATE);
+      document.getElementById("app").innerHTML = stepTerritoire();
+      bindTerritoire();
+    });
+  });
+}
+
+/* ---------------------- Étape 3 : Score Échiquier ----------------------
+   Fusionne le dossier de presse (support de lecture) et la grille de
+   score : les deux ne forment qu'une seule étape dans le déroulé de la
+   note de cadrage v3 (« Support à distribuer aux tables à l'étape 3 »). */
+function stepScore(){
+  const s = STATE.score || {};
+  const rows = SCORE_CRITERES.map((c,i)=>{
+    const v = s[i] ?? "";
+    const opts = [0,1,2,3,4,5].map(n=>`<option value="${n}" ${String(v)===String(n)?"selected":""}>${n}</option>`).join("");
+    return `<div class="score-row"><div class="lbl">${c}</div><select data-i="${i}"><option value="" ${v===""?"selected":""}>–</option>${opts}</select></div>`;
+  }).join("");
+  const total = SCORE_CRITERES.reduce((a,_,i)=> a + (Number(s[i])||0), 0);
+  const answered = SCORE_CRITERES.filter((_,i)=> s[i] !== undefined && s[i] !== "").length;
+  let baro = "", baroClass = "";
+  if(answered < SCORE_CRITERES.length){ baro = "Grille incomplète"; baroClass = ""; }
+  else if(total < 10){ baro = "STOP : identifier les enjeux d'abord"; baroClass = "bar-stop"; }
+  else if(total < 25){ baro = "À approfondir avant Go"; baroClass = "bar-warn"; }
+  else { baro = "Dossier suffisamment qualifié"; baroClass = "bar-go"; }
+  const reperes = REPERES_ARTICLE.map(([crit,suggere])=>`<tr><td>${crit}</td><td>${suggere}</td></tr>`).join("");
+  return `
+  <div class="card">
+    <h2>Étape 3 — Dossier de presse : LA FRITE DORÉE</h2>
+    <div class="meta">${ARTICLE_PRESSE.source}</div>
+    <div class="article">
+      <h3>${ARTICLE_PRESSE.titre}</h3>
+      ${ARTICLE_PRESSE.corps.map(p=>`<p>${p}</p>`).join("")}
+    </div>
+    <div class="reperes-wrap">
+      <table class="reperes">
+        <thead><tr><th>Critère (grille /40)</th><th>Ce que l'article suggère</th></tr></thead>
+        <tbody>${reperes}</tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Score Échiquier</h2>
+    <div class="meta">8 critères, notés de 0 à 5, à partir du seul dossier de presse ci-dessus</div>
+    ${rows}
+    <div class="kpi"><div class="box"><div class="v">${total} / 40</div><div class="l">Score total</div></div></div>
+    ${baroClass ? `<div class="barometre ${baroClass}">${baro}</div>` : `<div class="save-note">${baro}</div>`}
+  </div>`;
+}
+function bindScore(){
+  document.querySelectorAll(".score-row select").forEach(sel=>{
+    sel.addEventListener("change", e=>{
+      STATE.score = STATE.score || {};
+      STATE.score[e.target.dataset.i] = e.target.value;
+      saveState(STATE);
+      document.getElementById("app").innerHTML = stepScore();
+      bindScore();
+    });
+  });
+}
+
+/* ---------------------- Étape 4 : Go/No-Go ----------------------------- */
+function stepGoNoGo(){
+  const s = STATE.gonogo || {decision:"", justification:""};
+  return `
+  <div class="card">
+    <h2>Étape 4 — Go / No-Go</h2>
+    <div class="meta">Sur LA FRITE DORÉE, à partir du Score Échiquier</div>
+    <label>Décision</label>
+    <select id="gngDecision">
+      <option value="" ${s.decision===""?"selected":""}>—</option>
+      <option value="GO" ${s.decision==="GO"?"selected":""}>GO — on investit des ressources pour en savoir plus</option>
+      <option value="NO GO" ${s.decision==="NO GO"?"selected":""}>NO GO — pas maintenant</option>
+    </select>
+    <label>Justification</label>
+    <textarea id="gngJustif" placeholder="Pourquoi cette décision ?">${s.justification||""}</textarea>
+  </div>`;
+}
+function bindGoNoGo(){
+  document.getElementById("gngDecision").addEventListener("change", e=>{
+    STATE.gonogo = STATE.gonogo || {}; STATE.gonogo.decision = e.target.value; saveState(STATE);
+  });
+  document.getElementById("gngJustif").addEventListener("input", e=>{
+    STATE.gonogo = STATE.gonogo || {}; STATE.gonogo.justification = e.target.value; saveState(STATE);
+  });
+}
+
+/* ---------------------- Étape 5 : Entretien agent ----------------------- */
+const AGENTS = [
+  {id:"directeur", nom:"Philippe Vasseur", role:"Directeur d'usine"},
+  {id:"chefprojet", nom:"Amélie Rostand", role:"Chef de projet"},
+  {id:"hse", nom:"Karim Belhadj", role:"Responsable HSE"},
+  {id:"acheteuse", nom:"Sophie Guillemin", role:"Acheteuse"},
+  {id:"coordinateur", nom:"Yannick Delporte", role:"Coordinateur sécurité incendie groupe"},
+];
+function stepAgent(){
+  const s = STATE.agent || {choix:"", notes:""};
+  const opts = AGENTS.map(a=>`<option value="${a.id}" ${s.choix===a.id?"selected":""}>${a.nom} — ${a.role}</option>`).join("");
+  return `
+  <div class="card">
+    <h2>Étape 5 — Entretien de préparation au rendez-vous</h2>
+    <div class="meta">20 minutes fermes · un seul interlocuteur au choix</div>
+    <label>Interlocuteur choisi</label>
+    <select id="agentChoix"><option value="" ${s.choix===""?"selected":""}>—</option>${opts}</select>
+    <div class="save-note" style="margin:10px 0 4px;">L'entretien se déroule via l'agent Copilot dédié à cet interlocuteur (lien communiqué en séance par l'animateur — plateforme en cours de confirmation). Utilisez le champ ci-dessous pour noter ce que vous en retenez.</div>
+    <label>Notes d'entretien — ce qui a été appris, ce qui reste flou</label>
+    <textarea id="agentNotes" style="min-height:110px;" placeholder="Notez ici les informations obtenues...">${s.notes||""}</textarea>
+  </div>`;
+}
+function bindAgent(){
+  document.getElementById("agentChoix").addEventListener("change", e=>{
+    STATE.agent = STATE.agent || {}; STATE.agent.choix = e.target.value; saveState(STATE);
+  });
+  document.getElementById("agentNotes").addEventListener("input", e=>{
+    STATE.agent = STATE.agent || {}; STATE.agent.notes = e.target.value; saveState(STATE);
+  });
+}
+
+/* ---------------------- Étape 6 : SWOT ---------------------------------- */
+function stepSWOT(){
+  const s = STATE.swot || {f:"",w:"",o:"",t:""};
+  return `
+  <div class="card">
+    <h2>Étape 6 — SWOT</h2>
+    <div class="meta">8 minutes de réflexion · format minute</div>
+    <div class="swot-grid">
+      <div class="swot-cell swot-f"><h3>Forces</h3><textarea id="swotF">${s.f}</textarea></div>
+      <div class="swot-cell swot-w"><h3>Faiblesses</h3><textarea id="swotW">${s.w}</textarea></div>
+      <div class="swot-cell swot-o"><h3>Opportunités</h3><textarea id="swotO">${s.o}</textarea></div>
+      <div class="swot-cell swot-t"><h3>Menaces</h3><textarea id="swotT">${s.t}</textarea></div>
+    </div>
+  </div>`;
+}
+function bindSWOT(){
+  [["swotF","f"],["swotW","w"],["swotO","o"],["swotT","t"]].forEach(([id,key])=>{
+    document.getElementById(id).addEventListener("input", e=>{
+      STATE.swot = STATE.swot || {}; STATE.swot[key] = e.target.value; saveState(STATE);
+    });
+  });
+}
+
+/* ---------------------- Étape 7 : Fiche Mission ------------------------- */
+function stepMission(){
+  const s = STATE.mission || {couleur:"", enjeux:"", niveau:"", heures:""};
+  return `
+  <div class="card">
+    <h2>Étape 7 — Fiche Mission Chiffreur</h2>
+    <div class="meta">Traduction chiffrée de tout ce qui précède</div>
+    <div class="grid2">
       <div>
-        <div class="topbar-title">CAP Compétitivité</div>
-        <div class="topbar-subtitle">Boîte à outils — gestion des affaires</div>
+        <label>Couleur retenue</label>
+        <select id="misCouleur">
+          <option value="" ${s.couleur===""?"selected":""}>—</option>
+          <option value="VERT" ${s.couleur==="VERT"?"selected":""}>VERT</option>
+          <option value="ORANGE" ${s.couleur==="ORANGE"?"selected":""}>ORANGE</option>
+          <option value="ROSE" ${s.couleur==="ROSE"?"selected":""}>ROSE</option>
+        </select>
+      </div>
+      <div>
+        <label>Niveau d'étude demandé</label>
+        <select id="misNiveau">
+          <option value="" ${s.niveau===""?"selected":""}>—</option>
+          <option value="Ratio" ${s.niveau==="Ratio"?"selected":""}>Chiffrage au ratio</option>
+          <option value="Standard" ${s.niveau==="Standard"?"selected":""}>Étude standard</option>
+          <option value="Approfondi" ${s.niveau==="Approfondi"?"selected":""}>Étude approfondie / sur-mesure</option>
+        </select>
       </div>
     </div>
-    <nav class="topbar-nav">
-      <a href="#/" data-nav="dashboard">Affaires</a>
-      <a href="#/cas-pratique" data-nav="cas-pratique">Cas pratique</a>
-      <a href="#/reperes" data-nav="reperes">Repères</a>
-    </nav>
-    <div class="topbar-actions">
-      <button id="btn-import" class="btn btn-ghost" title="Importer une sauvegarde JSON">Importer</button>
-      <button id="btn-export" class="btn btn-ghost" title="Exporter toutes les données (JSON)">Exporter tout</button>
-      <input type="file" id="file-import" accept="application/json" hidden>
+    <label>Enjeux (résumé)</label>
+    <textarea id="misEnjeux" placeholder="À partir du SWOT et de l'entretien...">${s.enjeux}</textarea>
+    <label>Heures de chiffrage demandées</label>
+    <input type="number" id="misHeures" min="0" value="${s.heures}">
+  </div>`;
+}
+function bindMission(){
+  document.getElementById("misCouleur").addEventListener("change", e=>{ STATE.mission=STATE.mission||{}; STATE.mission.couleur=e.target.value; saveState(STATE); });
+  document.getElementById("misNiveau").addEventListener("change", e=>{ STATE.mission=STATE.mission||{}; STATE.mission.niveau=e.target.value; saveState(STATE); });
+  document.getElementById("misEnjeux").addEventListener("input", e=>{ STATE.mission=STATE.mission||{}; STATE.mission.enjeux=e.target.value; saveState(STATE); });
+  document.getElementById("misHeures").addEventListener("input", e=>{ STATE.mission=STATE.mission||{}; STATE.mission.heures=e.target.value; saveState(STATE); });
+}
+
+/* ---------------------- Export / Import (par table) ---------------------- */
+function exportData(){
+  const blob = new Blob([JSON.stringify(STATE, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const t = document.getElementById("tableName").value || "table";
+  a.href = url; a.download = `cap-competitivite-${t.replace(/\s+/g,"_")}-2oct.json`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function importData(file){
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      STATE = JSON.parse(reader.result);
+      saveState(STATE);
+      render();
+    }catch(e){ alert("Fichier illisible."); }
+  };
+  reader.readAsText(file);
+}
+
+/* ---------------------- Vue animateur : bilan multi-tables ---------------------- */
+function summarizeTableState(state, fallbackName){
+  const nom = (state.meta && state.meta.table) || fallbackName || "(table inconnue)";
+  const pac = state.pac || {pv:35, po:48, pr:17, tv:50, to:30, tr:20};
+  const r = calcPAC(pac);
+  const territoire = state.territoire || {};
+  const nogoCount = Object.values(territoire).filter(v=>v==="NO GO").length;
+  const couleurFilRouge = territoire[DOSSIER_FIL_ROUGE_N] || "—";
+  const score = state.score || {};
+  const scoreTotal = SCORE_CRITERES.reduce((a,_,i)=> a + (Number(score[i])||0), 0);
+  const gonogo = (state.gonogo && state.gonogo.decision) || "—";
+  const mission = state.mission || {};
+  return {
+    nom,
+    margeNette: Math.round(r.mnTotal),
+    nogoCount,
+    couleurFilRouge,
+    scoreTotal,
+    gonogo,
+    missionCouleur: mission.couleur || "—",
+    missionNiveau: mission.niveau || "—",
+    missionHeures: mission.heures || "—",
+  };
+}
+
+let bilanRows = [];
+
+function stepBilan(){
+  const rowsHtml = bilanRows.map(r=>`
+    <tr>
+      <td><strong>${r.nom}</strong></td>
+      <td>${r.margeNette.toLocaleString("fr-FR")} €</td>
+      <td class="count-nogo ${r.nogoCount>=5?"ok":"low"}">${r.nogoCount} / 5</td>
+      <td><span class="pill couleur-select" data-c="${r.couleurFilRouge}" style="padding:2px 8px;">${r.couleurFilRouge}</span></td>
+      <td>${r.scoreTotal} / 40</td>
+      <td>${r.gonogo}</td>
+      <td>${r.missionCouleur}</td>
+      <td>${r.missionNiveau}</td>
+      <td>${r.missionHeures}</td>
+    </tr>`).join("");
+  const kpiMoyenne = bilanRows.length ? Math.round(bilanRows.reduce((a,r)=>a+r.margeNette,0)/bilanRows.length) : 0;
+  return `
+  <div class="card">
+    <h2>Vue animateur — Tableau de bord de clôture</h2>
+    <div class="meta">Importez les fichiers JSON exportés par chaque table (bouton « Exporter » de chaque poste) pour les comparer en plénière.</div>
+    <label>Importer un ou plusieurs exports de table</label>
+    <div class="drop-zone" id="bilanDrop">Cliquez ici pour choisir un ou plusieurs fichiers .json exportés par les tables</div>
+    <input type="file" id="bilanFiles" accept="application/json" multiple hidden>
+    ${bilanRows.length ? `
+    <div class="kpi">
+      <div class="box"><div class="v">${bilanRows.length}</div><div class="l">Tables importées</div></div>
+      <div class="box"><div class="v">${kpiMoyenne.toLocaleString("fr-FR")} €</div><div class="l">Marge nette moyenne (étape 1)</div></div>
     </div>
-  </header>
+    <div class="bilan-table-wrap">
+      <table class="bilan">
+        <thead><tr>
+          <th>Table</th><th>Marge nette PAC</th><th>Dont NO GO</th>
+          <th>Couleur donnée au dossier fil rouge (n°${DOSSIER_FIL_ROUGE_N})</th>
+          <th>Score Échiquier</th><th>Go/No-Go</th>
+          <th>Mission — couleur</th><th>Mission — niveau</th><th>Mission — heures</th>
+        </tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </div>` : `<div class="save-note" style="margin-top:14px;">Aucun fichier importé pour l'instant.</div>`}
+  </div>
+  <div class="btn-row">
+    <button class="btn secondary" id="btnRetourStagiaire">← Retour au parcours stagiaire</button>
+  </div>`;
+}
+function bindBilan(){
+  const dropZone = document.getElementById("bilanDrop");
+  const filesInput = document.getElementById("bilanFiles");
+  dropZone.addEventListener("click", ()=> filesInput.click());
+  filesInput.addEventListener("change", e=>{
+    const files = Array.from(e.target.files || []);
+    let pending = files.length;
+    if(!pending) return;
+    files.forEach(file=>{
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        try{
+          const parsed = JSON.parse(reader.result);
+          const fallback = file.name.replace(/^cap-competitivite-/,"").replace(/-2oct\.json$/,"").replace(/\.json$/,"");
+          bilanRows.push(summarizeTableState(parsed, fallback));
+        }catch(err){ /* fichier ignoré s'il est illisible */ }
+        pending--;
+        if(pending === 0){
+          document.getElementById("app").innerHTML = stepBilan();
+          bindBilan();
+        }
+      };
+      reader.readAsText(file);
+    });
+  });
+  document.getElementById("btnRetourStagiaire").addEventListener("click", ()=>{
+    animateurMode = false; render();
+  });
+}
 
-  <main id="main" class="main"></main>
+/* ---------------------- Rendu général ------------------------------------ */
+function render(){
+  renderNav();
+  const app = document.getElementById("app");
 
-  <footer class="footer">
-    Données stockées localement dans ce navigateur — pensez à « Exporter tout » régulièrement pour sauvegarder.
-  </footer>
-</div>
+  if(animateurMode){
+    app.innerHTML = stepBilan();
+    bindBilan();
+    return;
+  }
 
-<div id="toast" class="toast" hidden></div>
+  let html = "";
+  let bind = ()=>{};
+  switch(currentStep){
+    case "pac": html = stepPAC(); bind = bindPAC; break;
+    case "territoire": html = stepTerritoire(); bind = bindTerritoire; break;
+    case "score": html = stepScore(); bind = bindScore; break;
+    case "gonogo": html = stepGoNoGo(); bind = bindGoNoGo; break;
+    case "agent": html = stepAgent(); bind = bindAgent; break;
+    case "swot": html = stepSWOT(); bind = bindSWOT; break;
+    case "mission": html = stepMission(); bind = bindMission; break;
+  }
+  html += `
+  <div class="btn-row">
+    <button class="btn" onclick="exportData()">Exporter (JSON)</button>
+    <label class="btn secondary" style="cursor:pointer;">
+      Importer
+      <input type="file" accept="application/json" style="display:none" onchange="importData(this.files[0])">
+    </label>
+  </div>`;
+  app.innerHTML = html;
+  bind();
+}
 
-<script src="vendor/xlsx.full.min.js"></script>
-<script src="js/state.js"></script>
-<script src="js/export.js"></script>
-<script src="js/casPratique.js"></script>
-<script src="js/casPratiqueUI.js"></script>
-<script src="js/app.js"></script>
+document.getElementById("btnAnimateur").addEventListener("click", ()=>{
+  animateurMode = true; render(); window.scrollTo({top:0, behavior:"smooth"});
+});
+
+initTableName();
+STATE = loadState();
+render();
+</script>
 </body>
 </html>
