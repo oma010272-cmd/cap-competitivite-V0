@@ -492,7 +492,7 @@ function resetStep(stepId){
 function pacConstraintsOk(){
   const s = Object.assign({pv:0, po:0, pr:0, tv:0, to:0, tr:0}, STATE.pac || {});
   const r = calcPAC(s);
-  const c1ok = r.heuresRequises <= r.RESSOURCES;
+  const c1ok = r.volTotal <= PAC_CAPACITE_EUROS;
   const c2ok = Number(s.pr) > 10;
   const c3ok = Number(s.po) > Number(s.pv);
   const c4ok = r.tauxGlobal <= 33;
@@ -573,9 +573,10 @@ function calcPAC(v){
   const objSum = objV + objO + objR;
   const mnPct = objSum ? (mnTotal/objSum*100) : 0;
   const heuresRequises = hV + hO + hR;
+  const volTotal = volV + volO + volR;
   const tauxGlobal = (Number(v.pv||0)*Number(v.tv||0) + Number(v.po||0)*Number(v.to||0) + Number(v.pr||0)*Number(v.tr||0)) / 100;
 
-  return {RESSOURCES, ehV, ehO, ehR, hV, hO, hR, objV, objO, objR, mnV, mnO, mnR, mnTotal, mnPct, heuresRequises, tauxGlobal};
+  return {RESSOURCES, ehV, ehO, ehR, hV, hO, hR, objV, objO, objR, volV, volO, volR, volTotal, mnV, mnO, mnR, mnTotal, mnPct, heuresRequises, tauxGlobal};
 }
 
 function contrainteBox(label, ok, detail){
@@ -587,7 +588,7 @@ function stepPAC(){
   const totalPct = Number(s.pv)+Number(s.po)+Number(s.pr);
   const r = calcPAC(s);
 
-  const c1ok = r.heuresRequises <= r.RESSOURCES;
+  const c1ok = r.volTotal <= PAC_CAPACITE_EUROS;
   const c2ok = Number(s.pr) > 10;
   const c3ok = Number(s.po) > Number(s.pv);
   const c4ok = r.tauxGlobal <= 33;
@@ -612,7 +613,7 @@ function stepPAC(){
 
     <label style="margin-top:18px;">Contraintes à respecter</label>
     <div class="kpi">
-      ${contrainteBox("Heures de chiffrage requises ≤ capacité de l'agence", c1ok, `${fmtH(r.heuresRequises)} / ${fmtH(r.RESSOURCES)}`)}
+      ${contrainteBox("Volume de chiffrage (somme par couleur) ≤ capacité de l'agence", c1ok, `${fmtEUR(r.volTotal)} / ${fmtEUR(PAC_CAPACITE_EUROS)}`)}
       ${contrainteBox("Volume ROSE > 10 %", c2ok, `${s.pr || 0} %`)}
       ${contrainteBox("Volume ORANGE > Volume VERT", c3ok, `${s.po || 0} % vs ${s.pv || 0} %`)}
       ${contrainteBox("Taux de transformation global ≤ 33 %", c4ok, `${r.tauxGlobal.toFixed(1)} %`)}
@@ -622,7 +623,7 @@ function stepPAC(){
     <div class="kpi">
       <div class="box"><div class="v">${fmtEUR(r.mnTotal)}</div><div class="l">Marge nette totale estimée</div></div>
       <div class="box"><div class="v">${r.mnPct.toFixed(1)} %</div><div class="l">Marge nette (%)</div></div>
-      <div class="box"><div class="v">${fmtH(r.RESSOURCES)}</div><div class="l">Capacité de chiffrage (an)</div></div>
+      <div class="box"><div class="v">${fmtEUR(r.volTotal)}</div><div class="l">Volume de chiffrage (max ${fmtEUR(PAC_CAPACITE_EUROS)})</div></div>
       <div class="box"><div class="v">${fmtH(r.hV)} / ${fmtH(r.hO)} / ${fmtH(r.hR)}</div><div class="l">Heures VERT / ORANGE / ROSE</div></div>
     </div>
     <div class="save-note">Comparez votre marge nette avec celle des autres tables au tableau de bord de clôture.</div>
