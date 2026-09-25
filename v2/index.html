@@ -36,9 +36,10 @@
     margin:0; font-family:"Segoe UI", Arial, sans-serif; background:var(--bg); color:var(--text);
     padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
   }
+  #topbar{position:sticky; top:0; z-index:20;}
   header{
     background:var(--navy); color:#fff; padding:14px 20px; padding-top:calc(14px + env(safe-area-inset-top,0px));
-    display:flex; align-items:center; gap:14px; flex-wrap:wrap; position:sticky; top:0; z-index:20;
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
     border-bottom:3px solid var(--accent);
   }
   header .logo{font-size:22px;}
@@ -73,6 +74,12 @@
     background:rgba(255,255,255,.15); font-size:10.5px; margin-right:6px;
   }
   nav.steps button.active .n{background:var(--accent); color:#04211f;}
+  nav.steps button.locked{opacity:.4; cursor:not-allowed;}
+  .accueil-link{
+    background:transparent; border:1px solid rgba(255,255,255,.35); color:#C9D2E8; border-radius:6px;
+    padding:6px 10px; font-size:12px; cursor:pointer; font-family:inherit; white-space:nowrap;
+  }
+  .accueil-link:hover{color:#fff; border-color:#fff;}
   main{max-width:1180px; margin:0 auto; padding:20px 16px 60px;}
   .card{
     background:var(--card); border:1px solid var(--border); border-radius:10px; padding:20px;
@@ -176,6 +183,10 @@
   .consignes-box p{font-size:12.5px; line-height:1.5; margin:0 0 8px; color:var(--text);}
   .consignes-box p:last-child{margin-bottom:0;}
   .consignes-box p.cle{font-style:italic; color:var(--muted);}
+  .consignes-box p.question{
+    background:var(--orange-bg); color:var(--orange-fg); padding:9px 10px; border-radius:6px;
+    font-weight:700; font-style:normal;
+  }
 
   /* ---- Tableau d'analyse répétable (3 colonnes) ---- */
   table.analyse{width:100%; border-collapse:collapse; font-size:13px; margin-top:10px;}
@@ -230,6 +241,7 @@
 </head>
 <body>
 
+<div id="topbar">
 <header>
   <div class="logo">♟</div>
   <div>
@@ -237,6 +249,7 @@
     <div class="sub" id="headerSub">Méthode Cap Compétitivité — le client, les enjeux, les ressources</div>
   </div>
   <div class="spacer"></div>
+  <button class="accueil-link" id="btnAccueil" type="button">↩ Accueil</button>
   <button class="animateur-link" id="btnAnimateur" type="button">Vue animateur (bilan)</button>
   <div class="table-badge">
     Table&nbsp;:
@@ -245,6 +258,7 @@
 </header>
 
 <nav class="steps" id="stepsNav"></nav>
+</div>
 
 <main id="app"></main>
 
@@ -319,6 +333,23 @@ const DOSSIER_TERRITOIRE = [
 ];
 const DOSSIER_FIL_ROUGE_N = 9;
 
+/* Filtres de colonnes (étape 2) — état d'affichage transitoire, non persisté. */
+const FILTERABLE_COLUMNS = [
+  {key:"decision", label:"Décision", get:(d,choix)=> choix[d.n] || ""},
+  {key:"secteur", label:"Secteur", get:d=>d.secteur},
+  {key:"ouvrage", label:"Ouvrage", get:d=>d.ouvrage},
+  {key:"pc", label:"PC", get:d=>d.pc},
+  {key:"icpe", label:"ICPE", get:d=>d.icpe},
+  {key:"travaux", label:"Travaux", get:d=>d.travaux},
+  {key:"marche", label:"Marché", get:d=>d.marche},
+  {key:"historique", label:"Historique", get:d=>d.historique},
+  {key:"relation", label:"Relation", get:d=>d.relation},
+  {key:"be", label:"BE", get:d=>d.be},
+  {key:"maintenance", label:"Maintenance", get:d=>d.maintenance},
+  {key:"concurrence", label:"Concurrence", get:d=>d.concurrence},
+];
+let territoireFilters = {};
+
 const ARTICLE_PRESSE = {
   titre: "LA FRITE DORÉE annonce 4 M€ de travaux sur son site du Nord, sous surveillance renforcée de la DREAL",
   source: "LA VOIX INDUSTRIELLE DES HAUTS-DE-FRANCE — Édition économique",
@@ -342,6 +373,29 @@ const SCORE_CRITERES = [
 ];
 
 const PIECES_ECHIQUIER = ["Roi","Reine","Tour","Fou","Cavalier","Pion"];
+
+/* Synthèse automatique du Score Échiquier — mêmes 4 niveaux que l'outil
+   Score 40 de la boîte à outils CAP Compétitivité. */
+const SCORE_NIVEAUX = [
+  {max:10, label:"Affaire non maîtrisée", desc:"Ne pas engager d'étude. Aller chercher l'information manquante.", cls:"bar-stop"},
+  {max:20, label:"Connaissance insuffisante", desc:"Poursuivre la qualification. Étude limitée au ratio.", cls:"bar-warn"},
+  {max:30, label:"Affaire sous contrôle", desc:"Engagement proportionné. Le mémoire peut être construit sur les enjeux.", cls:"bar-warn"},
+  {max:Infinity, label:"Affaire pilotée", desc:"Investissement pleinement justifié.", cls:"bar-go"},
+];
+function scoreNiveau(total){ return SCORE_NIVEAUX.find(n=>total < n.max); }
+
+/* Repère : structure de la fiche de préparation rendez-vous "classique" de la
+   boîte à outils CAP Compétitivité — non pratiquée dans cet exercice (remplacée
+   par l'entretien agent), mais utile comme grille de questions. */
+const FICHE_PREP_RDV = [
+  {section:"1 — Identification", items:["Date et type de rendez-vous", "Commercial en charge, client/prospect, site"]},
+  {section:"2 — L'interlocuteur", items:["Nom, fonction, rôle réel dans la décision", "Niveau d'influence perçu, posture pressentie", "Pièce de l'échiquier associée"]},
+  {section:"3 — Pourquoi ce rendez-vous ?", items:["Déclencheur du RDV", "Axe de développement commercial", "En quoi ce RDV sert notre stratégie (le coup recherché)"]},
+  {section:"4 — Enjeux supposés du client", items:["3 maximum — des hypothèses, jamais un « besoin » présumé acquis"]},
+  {section:"5 — Objectifs de l'entretien", items:["3 maximum — ce qu'on veut obtenir de ce rendez-vous précis"]},
+  {section:"6 — Informations à obtenir / valider", items:["5 maximum — ce qui manque encore pour qualifier l'affaire"]},
+  {section:"7 — Résultat attendu et prochaine étape", items:["Résultat minimum acceptable, sinon le RDV a échoué", "Prochaine étape proposée et date"]},
+];
 
 const AGENTS = [
   {id:"directeur", nom:"Philippe Vasseur", role:"Directeur d'usine"},
@@ -405,7 +459,8 @@ let animateurMode = false;
 /* ---------------------- Gabarit commun : consignes + contenu ---------------------- */
 function stepShell(stepId, meta, consignesLines, bodyHtml){
   const cles = consignesLines.filter(l=>l.cle).map(l=>`<p class="cle">${l.text}</p>`).join("");
-  const normales = consignesLines.filter(l=>!l.cle).map(l=>`<p>${l.text}</p>`).join("");
+  const questions = consignesLines.filter(l=>l.q).map(l=>`<p class="question">${l.text}</p>`).join("");
+  const normales = consignesLines.filter(l=>!l.cle && !l.q).map(l=>`<p>${l.text}</p>`).join("");
   return `
   <div class="card">
     <div class="step-layout">
@@ -413,6 +468,7 @@ function stepShell(stepId, meta, consignesLines, bodyHtml){
         <h4>Consignes</h4>
         ${normales}
         ${cles}
+        ${questions}
       </aside>
       <div class="step-content">
         <h2>${STEP_TITLES[stepId]}</h2>
@@ -433,16 +489,32 @@ function resetStep(stepId){
 }
 
 /* ---------------------- Rendu de la navigation ---------------------- */
+function pacConstraintsOk(){
+  const s = Object.assign({pv:0, po:0, pr:0, tv:0, to:0, tr:0}, STATE.pac || {});
+  const r = calcPAC(s);
+  const c1ok = r.heuresRequises <= r.RESSOURCES;
+  const c2ok = Number(s.pr) > 10;
+  const c3ok = Number(s.po) > Number(s.pv);
+  const c4ok = r.tauxGlobal <= 33;
+  return c1ok && c2ok && c3ok && c4ok;
+}
 function renderNav(){
   const nav = document.getElementById("stepsNav");
   nav.innerHTML = "";
   if(animateurMode || currentStep === "accueil"){ nav.style.display = "none"; return; }
   nav.style.display = "flex";
+  const unlocked = pacConstraintsOk();
   STEPS.forEach((s, i)=>{
     const b = document.createElement("button");
-    b.className = s.id === currentStep ? "active" : "";
+    const isLocked = i > 0 && !unlocked;
+    b.className = (s.id === currentStep ? "active" : "") + (isLocked ? " locked" : "");
     b.innerHTML = `<span class="n">${i+1}</span>${s.label.split(" · ")[1]}`;
-    b.onclick = ()=>{ currentStep = s.id; render(); window.scrollTo({top:0, behavior:"smooth"}); };
+    if(isLocked){
+      b.title = "Terminez d'abord l'étape 1 : les 4 contraintes doivent être respectées.";
+      b.onclick = ()=>{ alert("Terminez d'abord l'étape 1 — les 4 contraintes doivent être respectées avant d'accéder aux étapes suivantes."); };
+    } else {
+      b.onclick = ()=>{ currentStep = s.id; render(); window.scrollTo({top:0, behavior:"smooth"}); };
+    }
     nav.appendChild(b);
   });
 }
@@ -553,7 +625,16 @@ function stepPAC(){
       <div class="box"><div class="v">${fmtH(r.RESSOURCES)}</div><div class="l">Capacité de chiffrage (an)</div></div>
       <div class="box"><div class="v">${fmtH(r.hV)} / ${fmtH(r.hO)} / ${fmtH(r.hR)}</div><div class="l">Heures VERT / ORANGE / ROSE</div></div>
     </div>
-    <div class="save-note">Comparez votre marge nette avec celle des autres tables au tableau de bord de clôture.</div>`;
+    <div class="save-note">Comparez votre marge nette avec celle des autres tables au tableau de bord de clôture.</div>
+
+    <label style="margin-top:18px;">Repères de calcul (valeurs fixes de l'agence)</label>
+    <div class="save-note" style="margin-top:0;">Ces valeurs ne bougent pas quand vous changez vos 6 saisies ci-dessus — ce sont elles qui transforment vos % en heures et en marge. Elles seront réutilisées telles quelles à l'étape 2.</div>
+    <table class="recap-couleur">
+      <thead><tr><th>Couleur</th><th>€ / heure de chiffrage</th><th>Marge nette</th></tr></thead>
+      <tbody>
+        ${["VERT","ORANGE","ROSE"].map(c=>`<tr><td>${c}</td><td>${EUR_H_COULEUR[c].toLocaleString("fr-FR")} €/h</td><td>${(PAC_MARGES[c]*100).toFixed(0)} %</td></tr>`).join("")}
+      </tbody>
+    </table>`;
 
   return stepShell("pac", "6 valeurs à renseigner · calcul en direct de la marge nette et des contraintes", consignes, body);
 }
@@ -567,6 +648,7 @@ function bindPAC(){
       STATE.pac = s; saveState(STATE);
       document.getElementById("app").innerHTML = stepPAC();
       bindPAC();
+      renderNav();
     });
   });
 }
@@ -583,7 +665,27 @@ function stepTerritoire(){
     {text:"La couleur ne caractérise pas le client, elle caractérise notre position — et notre position découle de ce qu'on a décidé au PAC.", cle:true},
   ];
 
-  const rows = DOSSIER_TERRITOIRE.map((d,idx)=>{
+  const filtresHtml = FILTERABLE_COLUMNS.map(f=>{
+    const values = Array.from(new Set(DOSSIER_TERRITOIRE.map(d=>f.get(d, choix)).filter(v=>v!==""))).sort();
+    const current = territoireFilters[f.key] || "";
+    return `<div style="min-width:130px;">
+      <label style="margin:0 0 3px;">${f.label}</label>
+      <select data-filter="${f.key}">
+        <option value="" ${current===""?"selected":""}>Tous</option>
+        ${values.map(v=>`<option value="${v}" ${current===v?"selected":""}>${v}</option>`).join("")}
+      </select>
+    </div>`;
+  }).join("");
+
+  const dossiersFiltres = DOSSIER_TERRITOIRE.filter(d=>{
+    return FILTERABLE_COLUMNS.every(f=>{
+      const wanted = territoireFilters[f.key];
+      if(!wanted) return true;
+      return f.get(d, choix) === wanted;
+    });
+  });
+
+  const rows = dossiersFiltres.map((d,idx)=>{
     const c = choix[d.n] || "";
     const heures = (c === "VERT" || c === "ORANGE" || c === "ROSE") ? d.estimation / EUR_H_COULEUR[c] : null;
     return `<tr>
@@ -645,7 +747,13 @@ function stepTerritoire(){
   }
 
   const body = `
-    <div class="terr-wrap">
+    <label>Filtrer le tableau par colonne</label>
+    <div class="btn-row" style="margin-top:6px; align-items:flex-end;">
+      ${filtresHtml}
+      <button class="btn ghost" type="button" id="btnResetFiltres" style="align-self:flex-end;">Réinitialiser les filtres</button>
+    </div>
+    <div class="save-note">${dossiersFiltres.length} / ${DOSSIER_TERRITOIRE.length} dossiers affichés.</div>
+    <div class="terr-wrap" style="margin-top:10px;">
       <table class="terr">
         <thead><tr>
           <th>N°</th><th>Décision</th><th>Heures chiffrage</th><th>Société</th><th>Secteur</th><th>Ouvrage</th><th>PC</th><th>ICPE</th>
@@ -660,10 +768,11 @@ function stepTerritoire(){
     </div>
 
     <label style="margin-top:18px;">Récapitulatif par couleur</label>
+    <div class="save-note" style="margin-top:0;">La colonne Marge nette (%) est une valeur fixe de l'agence (identique à l'étape 1) — elle explique pourquoi deux couleurs au même montant ne rapportent pas la même chose.</div>
     <table class="recap-couleur">
-      <thead><tr><th>Couleur</th><th>Nb dossiers</th><th>Montant</th><th>Heures de chiffrage</th></tr></thead>
+      <thead><tr><th>Couleur</th><th>Nb dossiers</th><th>Montant</th><th>Heures de chiffrage</th><th>Marge nette (%)</th></tr></thead>
       <tbody>
-        ${["VERT","ORANGE","ROSE"].map(c=>`<tr><td>${c}</td><td>${parCouleur[c].n}</td><td>${fmtEUR(parCouleur[c].montant)}</td><td>${fmtH(parCouleur[c].heures)}</td></tr>`).join("")}
+        ${["VERT","ORANGE","ROSE"].map(c=>`<tr><td>${c}</td><td>${parCouleur[c].n}</td><td>${fmtEUR(parCouleur[c].montant)}</td><td>${fmtH(parCouleur[c].heures)}</td><td>${(PAC_MARGES[c]*100).toFixed(0)} %</td></tr>`).join("")}
       </tbody>
     </table>
 
@@ -686,6 +795,21 @@ function stepTerritoire(){
   return stepShell("territoire", `20 dossiers · potentiel ≈ ${total.toLocaleString("fr-FR")} € sur 6 mois`, consignes, body);
 }
 function bindTerritoire(){
+  document.querySelectorAll("[data-filter]").forEach(sel=>{
+    sel.addEventListener("change", e=>{
+      territoireFilters[e.target.dataset.filter] = e.target.value;
+      document.getElementById("app").innerHTML = stepTerritoire();
+      bindTerritoire();
+    });
+  });
+  const btnResetFiltres = document.getElementById("btnResetFiltres");
+  if(btnResetFiltres){
+    btnResetFiltres.addEventListener("click", ()=>{
+      territoireFilters = {};
+      document.getElementById("app").innerHTML = stepTerritoire();
+      bindTerritoire();
+    });
+  }
   document.querySelectorAll(".couleur-select").forEach(sel=>{
     sel.addEventListener("change", e=>{
       const n = e.target.dataset.n;
@@ -762,29 +886,33 @@ function stepScore3(){
   const grid = st.grid || {};
   const reperes = st.reperes || {};
 
-  const rows = SCORE_CRITERES.map((c,i)=>{
-    const v = grid[i] ?? "";
-    const opts = [0,1,2,3,4,5].map(n=>`<option value="${n}" ${String(v)===String(n)?"selected":""}>${n}</option>`).join("");
-    return `<div class="score-row"><div class="lbl">${c}</div><select data-i="${i}"><option value="" ${v===""?"selected":""}>–</option>${opts}</select></div>`;
-  }).join("");
   const total = SCORE_CRITERES.reduce((a,_,i)=> a + (Number(grid[i])||0), 0);
   const answered = SCORE_CRITERES.filter((_,i)=> grid[i] !== undefined && grid[i] !== "").length;
-  let baro = "", baroClass = "";
-  if(answered < SCORE_CRITERES.length){ baro = "Grille incomplète"; baroClass = ""; }
-  else if(total < 10){ baro = "STOP : identifier les enjeux d'abord"; baroClass = "bar-stop"; }
-  else if(total < 25){ baro = "À approfondir avant Go"; baroClass = "bar-warn"; }
-  else { baro = "Dossier suffisamment qualifié"; baroClass = "bar-go"; }
 
-  const reperesRows = SCORE_CRITERES.map((c,i)=>`
-    <tr><td class="crit">${c}</td><td><textarea data-i="${i}" placeholder="Votre analyse à partir de l'article...">${reperes[i]||""}</textarea></td></tr>`).join("");
+  const fusionRows = SCORE_CRITERES.map((c,i)=>{
+    const v = grid[i] ?? "";
+    const opts = [0,1,2,3,4,5].map(n=>`<option value="${n}" ${String(v)===String(n)?"selected":""}>${n}</option>`).join("");
+    return `<tr>
+      <td class="crit">${c}</td>
+      <td><textarea data-i="${i}" placeholder="Votre analyse à partir de l'article...">${reperes[i]||""}</textarea></td>
+      <td><select data-i="${i}" class="score3note"><option value="" ${v===""?"selected":""}>–</option>${opts}</select></td>
+    </tr>`;
+  }).join("");
 
   const consignes = [
     {text:"Objectif : objectiver le niveau de connaissance réel de l'affaire, à ce stade volontairement incomplet."},
-    {text:"Lisez l'article, puis notez chacun des 8 critères de 0 à 5."},
-    {text:"Complétez vous-même la colonne de droite du tableau de repères, à partir de votre lecture."},
+    {text:"Lisez l'article, puis pour chaque critère : notez votre analyse et une note de 0 à 5."},
     {text:"Listez ensuite, dans le tableau du bas, ce qui manque encore pour qualifier vraiment cette affaire."},
     {text:"Le score n'est pas une note, c'est un inventaire de ce qu'on ne sait pas encore.", cle:true},
   ];
+
+  let syntheseHtml;
+  if(answered < SCORE_CRITERES.length){
+    syntheseHtml = `<div class="save-note">Grille incomplète (${answered} / ${SCORE_CRITERES.length} critères notés).</div>`;
+  } else {
+    const niv = scoreNiveau(total);
+    syntheseHtml = `<div class="barometre ${niv.cls}"><div>Conclusion automatique : ${niv.label}</div><div style="font-weight:400; font-size:12.5px; margin-top:4px;">${niv.desc}</div></div>`;
+  }
 
   const body = `
     <div class="article">
@@ -792,17 +920,16 @@ function stepScore3(){
       <div class="save-note" style="margin-bottom:8px;">${ARTICLE_PRESSE.source}</div>
       ${ARTICLE_PRESSE.corps.map(p=>`<p>${p}</p>`).join("")}
     </div>
+
+    <label style="margin-top:18px;">Score Échiquier — analysez puis notez chaque critère de 0 à 5</label>
     <div class="reperes-wrap">
       <table class="reperes">
-        <thead><tr><th>Critère (grille /40)</th><th>Votre analyse</th></tr></thead>
-        <tbody>${reperesRows}</tbody>
+        <thead><tr><th>Critère (grille /40)</th><th>Votre analyse</th><th style="width:70px;">Notation</th></tr></thead>
+        <tbody>${fusionRows}</tbody>
       </table>
     </div>
-
-    <label style="margin-top:18px;">Score Échiquier — 8 critères, notés de 0 à 5</label>
-    ${rows}
     <div class="kpi"><div class="box"><div class="v">${total} / 40</div><div class="l">Score total</div></div></div>
-    ${baroClass ? `<div class="barometre ${baroClass}">Conclusion automatique : ${baro}</div>` : `<div class="save-note">${baro}</div>`}
+    ${syntheseHtml}
 
     <label style="margin-top:18px;">Analyse des inconnues</label>
     ${analyseTableHtml(st.analyse, "score3analyse")}`;
@@ -810,7 +937,7 @@ function stepScore3(){
   return stepShell("score3", "8 critères, notés à partir du seul dossier de presse", consignes, body);
 }
 function bindScore3(){
-  document.querySelectorAll(".score-row select").forEach(sel=>{
+  document.querySelectorAll(".score3note").forEach(sel=>{
     sel.addEventListener("change", e=>{
       STATE.score3 = STATE.score3 || {grid:{}, reperes:{}, analyse:[]};
       STATE.score3.grid = STATE.score3.grid || {};
@@ -847,6 +974,7 @@ function stepGoNoGo(){
       <h3>Ce que ce choix engage</h3>
       <p>Un GO n'est pas une conviction, c'est un pari raisonné : on accepte d'investir du temps de préparation supplémentaire parce que les signaux déjà réunis (score, enjeu, position) le justifient. Un NO GO n'est pas un renoncement définitif — c'est reconnaître qu'à ce stade, l'information manque trop pour engager l'agence.</p>
       <p>Pour justifier votre décision, appuyez-vous sur : le score obtenu et son évolution attendue ; la position commerciale (couleur retenue à l'étape 2) ; le nombre et la gravité des inconnues listées dans le tableau d'analyse ; la probabilité réaliste de lever ces inconnues avant la remise d'offre.</p>
+      <p><strong>Dans la réalité, cette décision se prend avec le directeur d'agence</strong>, pour valider la charge et la faisabilité au regard des disponibilités des équipes et du planning en cours.</p>
     </div>
     <label>Décision</label>
     <select id="gngDecision">
@@ -890,13 +1018,30 @@ function stepAgent(){
       <textarea data-i="${i}" data-f="notes" style="min-height:100px;" placeholder="Notez ici les informations obtenues...">${e.notes||""}</textarea>
     </div>`;
   }).join("");
+  const fichePrepHtml = FICHE_PREP_RDV.map(s=>`
+    <div style="margin-bottom:10px;">
+      <div style="font-weight:600; font-size:13px; color:var(--strong-text);">${s.section}</div>
+      <ul style="margin:4px 0 0; padding-left:20px;">${s.items.map(it=>`<li style="font-size:12.5px; line-height:1.6;">${it}</li>`).join("")}</ul>
+    </div>`).join("");
+
   const body = `
     <div class="save-note" style="margin-bottom:10px;">L'entretien se déroule via l'agent Copilot dédié à cet interlocuteur (lien communiqué en séance par l'animateur — plateforme en cours de confirmation).</div>
+    <div class="btn-row" style="margin-top:0; margin-bottom:14px;">
+      <button class="btn secondary" type="button" id="btnFichePrep">Voir la fiche de préparation rendez-vous (repère)</button>
+    </div>
+    <div class="cumul-box" id="fichePrepPanel" style="display:none; margin-top:0; margin-bottom:14px;">
+      <div class="save-note" style="margin-top:0;">Grille de la fiche de préparation rendez-vous classique de la boîte à outils — non remplie ici (remplacée par l'entretien agent), juste utile pour structurer vos questions.</div>
+      ${fichePrepHtml}
+    </div>
     ${blocs}
     <div class="btn-row"><button class="btn secondary" type="button" id="btnAddEntretien">+ Ajouter un entretien</button></div>`;
   return stepShell("agent", "20 minutes fermes · autant d'interlocuteurs que le temps le permet", consignes, body);
 }
 function bindAgent(){
+  document.getElementById("btnFichePrep").addEventListener("click", ()=>{
+    const panel = document.getElementById("fichePrepPanel");
+    panel.style.display = panel.style.display === "none" ? "block" : "none";
+  });
   document.querySelectorAll("#app select[data-f], #app textarea[data-f]").forEach(el=>{
     const evt = el.tagName === "SELECT" ? "change" : "input";
     el.addEventListener(evt, ()=>{
@@ -1010,6 +1155,7 @@ function stepSWOT(){
     {text:"Objectif : synthétiser ce qui a été appris (article + entretien) avant de le traduire en heures demandées."},
     {text:"Format minute : allez à l'essentiel, pas de rédaction longue."},
     {text:"Aucune table seule ne détient tout le tableau — c'est la mise en commun qui le complète.", cle:true},
+    {text:"Pourquoi le client choisirait-il Axima, à montant égal ?", q:true},
   ];
   const body = `
     <div class="swot-grid">
@@ -1279,6 +1425,9 @@ function render(){
 
 document.getElementById("btnAnimateur").addEventListener("click", ()=>{
   animateurMode = true; render(); window.scrollTo({top:0, behavior:"smooth"});
+});
+document.getElementById("btnAccueil").addEventListener("click", ()=>{
+  animateurMode = false; currentStep = "accueil"; render(); window.scrollTo({top:0, behavior:"smooth"});
 });
 
 initTableName();
