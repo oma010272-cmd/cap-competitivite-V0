@@ -119,7 +119,7 @@
   select.couleur-select[data-c="VERT"]{background:var(--vert-bg); color:var(--vert-fg);}
   select.couleur-select[data-c="ORANGE"]{background:var(--orange-bg); color:var(--orange-fg);}
   select.couleur-select[data-c="ROSE"]{background:var(--rose-bg); color:var(--rose-fg);}
-  select.couleur-select[data-c="NO GO"]{background:var(--nogo-bg); color:var(--nogo-fg);}
+  select.couleur-select[data-c="NO GO"]{background:#C81E1E; color:#fff;}
   .btn{
     background:var(--accent); color:#fff; border:none; border-radius:6px; padding:9px 16px;
     font-weight:700; font-size:13.5px; cursor:pointer; font-family:inherit;
@@ -493,9 +493,9 @@ function pacConstraintsOk(){
   const s = Object.assign({pv:0, po:0, pr:0, tv:0, to:0, tr:0}, STATE.pac || {});
   const r = calcPAC(s);
   const c1ok = r.volTotal <= PAC_CAPACITE_EUROS;
-  const c2ok = Number(s.pr) > 10;
+  const c2ok = Number(s.pr) >= 10;
   const c3ok = Number(s.po) > Number(s.pv);
-  const c4ok = r.tauxGlobal <= 33;
+  const c4ok = r.tauxGlobal <= 35;
   return c1ok && c2ok && c3ok && c4ok;
 }
 function renderNav(){
@@ -589,9 +589,9 @@ function stepPAC(){
   const r = calcPAC(s);
 
   const c1ok = r.volTotal <= PAC_CAPACITE_EUROS;
-  const c2ok = Number(s.pr) > 10;
+  const c2ok = Number(s.pr) >= 10;
   const c3ok = Number(s.po) > Number(s.pv);
-  const c4ok = r.tauxGlobal <= 33;
+  const c4ok = r.tauxGlobal <= 35;
 
   const consignes = [
     {text:"Objectif : vivre l'arbitrage entre volume, taux de transformation et marge, avant même de parler de prospection."},
@@ -613,17 +613,19 @@ function stepPAC(){
 
     <label style="margin-top:18px;">Contraintes à respecter</label>
     <div class="kpi">
-      ${contrainteBox("Volume de chiffrage (somme par couleur) ≤ capacité de l'agence", c1ok, `${fmtEUR(r.volTotal)} / ${fmtEUR(PAC_CAPACITE_EUROS)}`)}
-      ${contrainteBox("Volume ROSE > 10 %", c2ok, `${s.pr || 0} %`)}
+      <div style="display:flex; flex-direction:column; gap:8px; flex:1; min-width:150px;">
+        ${contrainteBox("Volume de chiffrage (somme par couleur) ≤ capacité de l'agence", c1ok, `${fmtEUR(r.volTotal)} / ${fmtEUR(PAC_CAPACITE_EUROS)}`)}
+        <div class="box ${r.volTotal > PAC_CAPACITE_EUROS ? 'ko' : 'ok'}"><div class="v">${fmtEUR(r.volTotal)}</div><div class="l">Volume de chiffrage total</div></div>
+      </div>
+      ${contrainteBox("Volume ROSE ≥ 10 %", c2ok, `${s.pr || 0} %`)}
       ${contrainteBox("Volume ORANGE > Volume VERT", c3ok, `${s.po || 0} % vs ${s.pv || 0} %`)}
-      ${contrainteBox("Taux de transformation global ≤ 33 %", c4ok, `${r.tauxGlobal.toFixed(1)} %`)}
+      ${contrainteBox("Taux de transformation global ≤ 35 %", c4ok, `${r.tauxGlobal.toFixed(1)} %`)}
     </div>
 
     <label style="margin-top:18px;">Résultats</label>
     <div class="kpi">
       <div class="box"><div class="v">${fmtEUR(r.mnTotal)}</div><div class="l">Marge nette totale estimée</div></div>
       <div class="box"><div class="v">${r.mnPct.toFixed(1)} %</div><div class="l">Marge nette (%)</div></div>
-      <div class="box"><div class="v">${fmtEUR(r.volTotal)}</div><div class="l">Volume de chiffrage (max ${fmtEUR(PAC_CAPACITE_EUROS)})</div></div>
       <div class="box"><div class="v">${fmtH(r.hV)} / ${fmtH(r.hO)} / ${fmtH(r.hR)}</div><div class="l">Heures VERT / ORANGE / ROSE</div></div>
     </div>
     <div class="save-note">Comparez votre marge nette avec celle des autres tables au tableau de bord de clôture.</div>
