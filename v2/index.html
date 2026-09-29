@@ -187,6 +187,21 @@
     background:var(--orange-bg); color:var(--orange-fg); padding:9px 10px; border-radius:6px;
     font-weight:700; font-style:normal;
   }
+  .hypotheses-box{
+    background:var(--navy-light); color:#fff; border-radius:8px; padding:14px 16px; margin-bottom:16px;
+  }
+  .hypotheses-box h4{margin:0 0 8px; font-size:12px; text-transform:uppercase; letter-spacing:.5px; color:#fff;}
+  .hypotheses-box p{font-size:12.5px; line-height:1.5; margin:0 0 6px; color:#fff;}
+  .hypotheses-box p:last-child{margin-bottom:0;}
+  .locked-cell{background:var(--border); color:var(--muted); font-style:italic;}
+  .contrainte-badge{font-size:11px; font-weight:700; white-space:nowrap;}
+  .contrainte-badge.ok{color:var(--muted);}
+  .contrainte-badge.ko{color:var(--danger-fg);}
+  .kpi .box.label-top .l{margin-top:0; margin-bottom:4px;}
+  .btn:disabled{opacity:.45; cursor:not-allowed;}
+  .filtres-grid{display:grid; grid-template-columns:repeat(6, 1fr); gap:10px; align-items:end;}
+  @media (max-width:1000px){.filtres-grid{grid-template-columns:repeat(4, 1fr);}}
+  @media (max-width:640px){.filtres-grid{grid-template-columns:repeat(2, 1fr);}}
 
   /* ---- Tableau d'analyse répétable (3 colonnes) ---- */
   table.analyse{width:100%; border-collapse:collapse; font-size:13px; margin-top:10px;}
@@ -203,9 +218,10 @@
   .cumul-row .val{font-weight:700; color:var(--strong-text);}
 
   /* ---- Récap couleur étape 2 ---- */
-  table.recap-couleur{width:100%; border-collapse:collapse; font-size:12.5px; margin-top:10px;}
-  table.recap-couleur th{background:var(--navy-light); color:#fff; padding:6px 8px; text-align:left;}
-  table.recap-couleur td{padding:6px 8px; border-bottom:1px solid var(--border);}
+  table.recap-couleur{width:auto; border-collapse:collapse; font-size:12.5px; margin-top:10px;}
+  table.recap-couleur th{background:var(--navy-light); color:#fff; padding:5px 7px; text-align:left;}
+  table.recap-couleur td{padding:5px 7px; border-bottom:1px solid var(--border);}
+  table.recap-couleur td.cible-cell{background:var(--orange-bg); color:var(--orange-fg); font-weight:700;}
 
   /* ---- Accueil ---- */
   .hero{
@@ -431,7 +447,7 @@ const CAPACITE_6MOIS_HEURES = PAC_RESSOURCES / 2;      // 1800 h
 const CAPACITE_6MOIS_EUROS = PAC_CAPACITE_EUROS / 2;   // 10 000 000 €
 
 const STEPS = [
-  {id:"pac", label:"1 · PAC"},
+  {id:"pac", label:"1 · Stratégie Commerciale"},
   {id:"territoire", label:"2 · Prospection"},
   {id:"score3", label:"3 · Score Échiquier"},
   {id:"gonogo", label:"4 · Go/No-Go"},
@@ -442,7 +458,7 @@ const STEPS = [
   {id:"strategie", label:"9 · Stratégie commerciale"},
 ];
 const STEP_TITLES = {
-  pac:"Étape 1 — Plan d'Action Commercial",
+  pac:"Étape 1 — Stratégie Commerciale",
   territoire:"Étape 2 — Prospection & hiérarchisation",
   score3:"Étape 3 — Dossier de presse & Score Échiquier",
   gonogo:"Étape 4 — Go / No-Go",
@@ -457,12 +473,18 @@ let currentStep = "accueil";
 let animateurMode = false;
 
 /* ---------------------- Gabarit commun : consignes + contenu ---------------------- */
-function stepShell(stepId, meta, consignesLines, bodyHtml){
+function stepShell(stepId, meta, consignesLines, bodyHtml, hypotheses){
   const cles = consignesLines.filter(l=>l.cle).map(l=>`<p class="cle">${l.text}</p>`).join("");
   const questions = consignesLines.filter(l=>l.q).map(l=>`<p class="question">${l.text}</p>`).join("");
   const normales = consignesLines.filter(l=>!l.cle && !l.q).map(l=>`<p>${l.text}</p>`).join("");
+  const hypothesesHtml = hypotheses ? `
+    <div class="hypotheses-box">
+      <h4>Hypothèses &amp; contraintes de l'exercice</h4>
+      ${hypotheses.map(t=>`<p>${t}</p>`).join("")}
+    </div>` : "";
   return `
   <div class="card">
+    ${hypothesesHtml}
     <div class="step-layout">
       <aside class="consignes-box">
         <h4>Consignes</h4>
@@ -498,20 +520,37 @@ function pacConstraintsOk(){
   const c4ok = r.tauxGlobal <= 35;
   return c1ok && c2ok && c3ok && c4ok;
 }
+function territoireConstraintsOk(){
+  const choix = STATE.territoire || {};
+  let cumulHeures = 0, cumulMontant = 0;
+  DOSSIER_TERRITOIRE.forEach(d=>{
+    const c = choix[d.n];
+    if(c === "VERT" || c === "ORANGE" || c === "ROSE"){
+      cumulHeures += d.estimation / EUR_H_COULEUR[c];
+      cumulMontant += d.estimation;
+    }
+  });
+  const nogoCount = Object.values(choix).filter(v=>v==="NO GO").length;
+  return cumulHeures <= CAPACITE_6MOIS_HEURES && cumulMontant <= CAPACITE_6MOIS_EUROS && nogoCount >= 5;
+}
 function renderNav(){
   const nav = document.getElementById("stepsNav");
   nav.innerHTML = "";
   if(animateurMode || currentStep === "accueil"){ nav.style.display = "none"; return; }
   nav.style.display = "flex";
-  const unlocked = pacConstraintsOk();
+  const pacOk = pacConstraintsOk();
+  const territoireOk = !!STATE.territoireRevele;
   STEPS.forEach((s, i)=>{
     const b = document.createElement("button");
-    const isLocked = i > 0 && !unlocked;
+    const isLocked = (i > 0 && !pacOk) || (i > 1 && !territoireOk);
     b.className = (s.id === currentStep ? "active" : "") + (isLocked ? " locked" : "");
     b.innerHTML = `<span class="n">${i+1}</span>${s.label.split(" · ")[1]}`;
     if(isLocked){
-      b.title = "Terminez d'abord l'étape 1 : les 4 contraintes doivent être respectées.";
-      b.onclick = ()=>{ alert("Terminez d'abord l'étape 1 — les 4 contraintes doivent être respectées avant d'accéder aux étapes suivantes."); };
+      const msg = (i > 0 && !pacOk)
+        ? "Terminez d'abord l'étape 1 — les 4 contraintes doivent être respectées avant d'accéder aux étapes suivantes."
+        : "Validez d'abord votre classification à l'étape 2 avant d'accéder aux étapes suivantes.";
+      b.title = msg;
+      b.onclick = ()=>{ alert(msg); };
     } else {
       b.onclick = ()=>{ currentStep = s.id; render(); window.scrollTo({top:0, behavior:"smooth"}); };
     }
@@ -600,7 +639,22 @@ function stepPAC(){
     {text:"Avant de chercher des affaires, il faut savoir quelles affaires on veut trouver — ce choix a un prix, visible dans la marge.", cle:true},
   ];
 
+  const hypotheses = [
+    `Objectif annuel de l'agence : <strong>${fmtEUR(PAC_OBJECTIF)}</strong>, réparti entre 3 couleurs de risque (VERT / ORANGE / ROSE).`,
+    `Contraintes à respecter : volume de chiffrage total ≤ <strong>${fmtEUR(PAC_CAPACITE_EUROS)}</strong> · volume ROSE ≥ 10 % · volume ORANGE > volume VERT · taux de transformation global ≤ 35 %.`,
+  ];
+
   const body = `
+    <label>Repères de calcul (valeurs fixes de l'agence)</label>
+    <div class="save-note" style="margin-top:0;">Ces valeurs ne bougent pas quand vous changez vos 6 saisies ci-dessous — ce sont elles qui transforment vos % en heures et en marge. La colonne Marge nette est verrouillée : c'est une donnée fixe de l'agence, pas une saisie.</div>
+    <table class="recap-couleur">
+      <thead><tr><th>Couleur</th><th>€ / heure de chiffrage</th><th>Marge nette</th></tr></thead>
+      <tbody>
+        ${["VERT","ORANGE","ROSE"].map(c=>`<tr><td>${c}</td><td>${EUR_H_COULEUR[c].toLocaleString("fr-FR")} €/h</td><td class="locked-cell">🔒 ${(PAC_MARGES[c]*100).toFixed(0)} %</td></tr>`).join("")}
+      </tbody>
+    </table>
+
+    <label style="margin-top:18px;">Vos 6 saisies</label>
     <div class="grid3">
       <div><label>% Volume VERT</label><input type="number" min="0" max="100" id="pv" value="${s.pv}"></div>
       <div><label>% Volume ORANGE</label><input type="number" min="0" max="100" id="po" value="${s.po}"></div>
@@ -610,6 +664,11 @@ function stepPAC(){
       <div><label>Taux transfo. ROSE (%)</label><input type="number" min="0" max="100" id="tr" value="${s.tr}"></div>
     </div>
     ${totalPct !== 100 ? `<div class="save-note" style="color:var(--danger-fg); font-weight:700;">⚠ La somme des % de volume fait ${totalPct}% — elle doit faire 100%.</div>` : ""}
+    <div class="kpi">
+      <div class="box"><div class="v">${fmtEUR(r.objV)}</div><div class="l">Objectif VERT (€)</div></div>
+      <div class="box"><div class="v">${fmtEUR(r.objO)}</div><div class="l">Objectif ORANGE (€)</div></div>
+      <div class="box"><div class="v">${fmtEUR(r.objR)}</div><div class="l">Objectif ROSE (€)</div></div>
+    </div>
 
     <label style="margin-top:18px;">Contraintes à respecter</label>
     <div class="kpi">
@@ -624,22 +683,12 @@ function stepPAC(){
 
     <label style="margin-top:18px;">Résultats</label>
     <div class="kpi">
-      <div class="box"><div class="v">${fmtEUR(r.mnTotal)}</div><div class="l">Marge nette totale estimée</div></div>
-      <div class="box"><div class="v">${r.mnPct.toFixed(1)} %</div><div class="l">Marge nette (%)</div></div>
-      <div class="box"><div class="v">${fmtH(r.hV)} / ${fmtH(r.hO)} / ${fmtH(r.hR)}</div><div class="l">Heures VERT / ORANGE / ROSE</div></div>
-    </div>
-    <div class="save-note">Comparez votre marge nette avec celle des autres tables au tableau de bord de clôture.</div>
+      <div class="box"><div class="v">${fmtEUR(r.mnTotal)}</div><div class="l">Marge nette totale calculée (€)</div></div>
+      <div class="box"><div class="v">${r.mnPct.toFixed(1)} %</div><div class="l">Marge nette totale calculée (%)</div></div>
+      <div class="box"><div class="v">${Math.round(r.hV)} / ${Math.round(r.hO)} / ${Math.round(r.hR)}</div><div class="l">Heures de chiffrage VERT / ORANGE / ROSE</div></div>
+    </div>`;
 
-    <label style="margin-top:18px;">Repères de calcul (valeurs fixes de l'agence)</label>
-    <div class="save-note" style="margin-top:0;">Ces valeurs ne bougent pas quand vous changez vos 6 saisies ci-dessus — ce sont elles qui transforment vos % en heures et en marge. Elles seront réutilisées telles quelles à l'étape 2.</div>
-    <table class="recap-couleur">
-      <thead><tr><th>Couleur</th><th>€ / heure de chiffrage</th><th>Marge nette</th></tr></thead>
-      <tbody>
-        ${["VERT","ORANGE","ROSE"].map(c=>`<tr><td>${c}</td><td>${EUR_H_COULEUR[c].toLocaleString("fr-FR")} €/h</td><td>${(PAC_MARGES[c]*100).toFixed(0)} %</td></tr>`).join("")}
-      </tbody>
-    </table>`;
-
-  return stepShell("pac", "6 valeurs à renseigner · calcul en direct de la marge nette et des contraintes", consignes, body);
+  return stepShell("pac", "Comprendre la mécanique des chiffres et leur interaction", consignes, body, hypotheses);
 }
 function bindPAC(){
   ["pv","po","pr","tv","to","tr"].forEach(id=>{
@@ -652,6 +701,13 @@ function bindPAC(){
       document.getElementById("app").innerHTML = stepPAC();
       bindPAC();
       renderNav();
+      const refocus = document.getElementById(id);
+      if(refocus){
+        refocus.focus();
+        const v = refocus.value;
+        refocus.value = "";
+        refocus.value = v;
+      }
     });
   });
 }
@@ -661,20 +717,30 @@ function stepTerritoire(){
   const choix = STATE.territoire || {};
 
   const consignes = [
-    {text:"Objectif : montrer que la prospection ne doit pas être aveugle, mais découler du PAC, et qu'elle suppose de savoir dire non."},
+    {text:"Objectif : montrer que la prospection ne doit pas être aveugle, mais découler de la Stratégie Commerciale, et qu'elle suppose de savoir dire non."},
     {text:"Classez chacun des 20 dossiers : VERT / ORANGE / ROSE / NO GO."},
     {text:"Au moins 5 dossiers doivent être déclarés NO GO, chacun justifié à l'oral."},
     {text:"Surveillez les cumuls (heures et volume) par rapport au maximum possible sur les 6 mois de l'exercice."},
-    {text:"La couleur ne caractérise pas le client, elle caractérise notre position — et notre position découle de ce qu'on a décidé au PAC.", cle:true},
+    {text:"La couleur ne caractérise pas le client, elle caractérise notre position — et notre position découle de ce qu'on a décidé dans la Stratégie Commerciale.", cle:true},
   ];
+
+  const hypotheses = [
+    "Il s'agit d'une liste de <strong>20 projets potentiels</strong>, établie pour la période des <strong>6 mois</strong> à venir.",
+    `La capacité de chiffrage est donc de <strong>${fmtH(CAPACITE_6MOIS_HEURES)}</strong>, pour un objectif de <strong>${fmtEUR(CAPACITE_6MOIS_EUROS)}</strong> sur ces 6 mois.`,
+    "11 thèmes permettent de filtrer les informations, en fonction des priorités issues de la Stratégie Commerciale (étape 1).",
+  ];
+
+  const pac = Object.assign({pv:0, po:0, pr:0, tv:0, to:0, tr:0}, STATE.pac || {});
 
   const filtresHtml = FILTERABLE_COLUMNS.map(f=>{
     const values = Array.from(new Set(DOSSIER_TERRITOIRE.map(d=>f.get(d, choix)).filter(v=>v!==""))).sort();
     const current = territoireFilters[f.key] || "";
-    return `<div style="min-width:130px;">
+    const emptyOption = f.key === "decision" ? `<option value="__EMPTY__" ${current==="__EMPTY__"?"selected":""}>(Non renseigné)</option>` : "";
+    return `<div>
       <label style="margin:0 0 3px;">${f.label}</label>
       <select data-filter="${f.key}">
         <option value="" ${current===""?"selected":""}>Tous</option>
+        ${emptyOption}
         ${values.map(v=>`<option value="${v}" ${current===v?"selected":""}>${v}</option>`).join("")}
       </select>
     </div>`;
@@ -684,6 +750,7 @@ function stepTerritoire(){
     return FILTERABLE_COLUMNS.every(f=>{
       const wanted = territoireFilters[f.key];
       if(!wanted) return true;
+      if(wanted === "__EMPTY__") return f.get(d, choix) === "";
       return f.get(d, choix) === wanted;
     });
   });
@@ -720,6 +787,7 @@ function stepTerritoire(){
   }).join("");
 
   const nogoCount = Object.values(choix).filter(v=>v==="NO GO").length;
+  const decisionsCount = Object.values(choix).filter(v=>v!=="").length;
   const total = DOSSIER_TERRITOIRE.reduce((a,d)=>a+d.estimation,0);
 
   let cumulHeures = 0, cumulMontant = 0;
@@ -732,28 +800,33 @@ function stepTerritoire(){
       parCouleur[c].n++; parCouleur[c].montant += d.estimation; parCouleur[c].heures += h;
     }
   });
+  const cibleParCouleur = {VERT:Number(pac.pv)||0, ORANGE:Number(pac.po)||0, ROSE:Number(pac.pr)||0};
 
   const revele = !!STATE.territoireRevele;
+  const tOk = territoireConstraintsOk();
   let margeHtml = "";
   if(revele){
+    const tauxParCouleur = {VERT:Number(pac.tv)/100, ORANGE:Number(pac.to)/100, ROSE:Number(pac.tr)/100};
     let margeTotal = 0;
     DOSSIER_TERRITOIRE.forEach(d=>{
       const c = choix[d.n];
-      if(c === "VERT" || c === "ORANGE" || c === "ROSE") margeTotal += PAC_MARGES[c] * d.estimation;
+      if(c === "VERT" || c === "ORANGE" || c === "ROSE") margeTotal += PAC_MARGES[c] * d.estimation * tauxParCouleur[c];
     });
     const margePct = cumulMontant ? (margeTotal/cumulMontant*100) : 0;
     margeHtml = `
     <div class="kpi" style="margin-top:14px;">
-      <div class="box"><div class="v">${fmtEUR(margeTotal)}</div><div class="l">Marge nette (dossiers classés hors NO GO)</div></div>
-      <div class="box"><div class="v">${margePct.toFixed(1)} %</div><div class="l">Marge nette (%)</div></div>
+      <div class="box label-top"><div class="l">Marge nette potentielle (€)</div><div class="v">${fmtEUR(margeTotal)}</div></div>
+      <div class="box label-top"><div class="l">Marge nette potentielle (%)</div><div class="v">${margePct.toFixed(1)} %</div></div>
     </div>`;
   }
 
   const body = `
     <label>Filtrer le tableau par colonne</label>
-    <div class="btn-row" style="margin-top:6px; align-items:flex-end;">
+    <div class="filtres-grid" style="margin-top:6px;">
       ${filtresHtml}
-      <button class="btn ghost" type="button" id="btnResetFiltres" style="align-self:flex-end;">Réinitialiser les filtres</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn ghost" type="button" id="btnResetFiltres">Réinitialiser les filtres</button>
     </div>
     <div class="save-note">${dossiersFiltres.length} / ${DOSSIER_TERRITOIRE.length} dossiers affichés.</div>
     <div class="terr-wrap" style="margin-top:10px;">
@@ -768,34 +841,37 @@ function stepTerritoire(){
     </div>
     <div class="kpi">
       <div class="box"><div class="v count-nogo ${nogoCount>=5?"ok":"low"}">${nogoCount} / 5</div><div class="l">Dossiers en NO GO (minimum imposé : 5, chacun justifié à l'oral)</div></div>
+      <div class="box"><div class="v">${decisionsCount} / ${DOSSIER_TERRITOIRE.length}</div><div class="l">Décisions prises (tous types confondus)</div></div>
     </div>
 
     <label style="margin-top:18px;">Récapitulatif par couleur</label>
-    <div class="save-note" style="margin-top:0;">La colonne Marge nette (%) est une valeur fixe de l'agence (identique à l'étape 1) — elle explique pourquoi deux couleurs au même montant ne rapportent pas la même chose.</div>
     <table class="recap-couleur">
-      <thead><tr><th>Couleur</th><th>Nb dossiers</th><th>Montant</th><th>Heures de chiffrage</th><th>Marge nette (%)</th></tr></thead>
+      <thead><tr><th>Couleur</th><th>Nb dossiers</th><th>Montant</th><th>% du montant (sélection)</th><th>% cible (Stratégie Commerciale, étape 1)</th><th>Heures de chiffrage</th></tr></thead>
       <tbody>
-        ${["VERT","ORANGE","ROSE"].map(c=>`<tr><td>${c}</td><td>${parCouleur[c].n}</td><td>${fmtEUR(parCouleur[c].montant)}</td><td>${fmtH(parCouleur[c].heures)}</td><td>${(PAC_MARGES[c]*100).toFixed(0)} %</td></tr>`).join("")}
+        ${["VERT","ORANGE","ROSE"].map(c=>{
+          const pctSel = cumulMontant ? (parCouleur[c].montant/cumulMontant*100) : 0;
+          return `<tr><td>${c}</td><td>${parCouleur[c].n}</td><td>${fmtEUR(parCouleur[c].montant)}</td><td>${pctSel.toFixed(1)} %</td><td class="cible-cell">${cibleParCouleur[c]} %</td><td>${fmtH(parCouleur[c].heures)}</td></tr>`;
+        }).join("")}
       </tbody>
     </table>
 
     <div class="cumul-box">
-      <div class="cumul-row ${cumulHeures>CAPACITE_6MOIS_HEURES?'over':''}">
-        <span>Heures de chiffrage cumulées</span>
-        <span class="val">${fmtH(cumulHeures)} <span class="max">/ ${fmtH(CAPACITE_6MOIS_HEURES)} max</span></span>
-      </div>
       <div class="cumul-row ${cumulMontant>CAPACITE_6MOIS_EUROS?'over':''}">
-        <span>Volume de chiffrage cumulé</span>
-        <span class="val">${fmtEUR(cumulMontant)} <span class="max">/ ${fmtEUR(CAPACITE_6MOIS_EUROS)} max</span></span>
+        <span>Volume de chiffrage cumulé — ${fmtEUR(cumulMontant)} <span class="max">/ ${fmtEUR(CAPACITE_6MOIS_EUROS)} max</span></span>
+        <span class="contrainte-badge ${cumulMontant>CAPACITE_6MOIS_EUROS?'ko':'ok'}">${cumulMontant>CAPACITE_6MOIS_EUROS?'Contrainte non respectée':'Contrainte respectée'}</span>
+      </div>
+      <div class="cumul-row ${cumulHeures>CAPACITE_6MOIS_HEURES?'over':''}">
+        <span>Heures de chiffrage cumulées — ${fmtH(cumulHeures)} <span class="max">/ ${fmtH(CAPACITE_6MOIS_HEURES)} max</span></span>
+        <span class="contrainte-badge ${cumulHeures>CAPACITE_6MOIS_HEURES?'ko':'ok'}">${cumulHeures>CAPACITE_6MOIS_HEURES?'Contrainte non respectée':'Contrainte respectée'}</span>
       </div>
     </div>
 
     ${margeHtml}
     <div class="btn-row">
-      <button class="btn secondary" type="button" id="btnRevele">${revele ? "Classification validée" : "Valider ma classification"}</button>
+      <button class="btn secondary" type="button" id="btnRevele" ${(!tOk && !revele) ? `disabled title="Respectez les 3 contraintes (heures ≤ ${fmtH(CAPACITE_6MOIS_HEURES)}, volume ≤ ${fmtEUR(CAPACITE_6MOIS_EUROS)}, minimum 5 NO GO) avant de valider."` : ""}>${revele ? "Classification validée" : "Valider ma classification"}</button>
     </div>`;
 
-  return stepShell("territoire", `20 dossiers · potentiel ≈ ${total.toLocaleString("fr-FR")} € sur 6 mois`, consignes, body);
+  return stepShell("territoire", `20 dossiers · potentiel ≈ ${total.toLocaleString("fr-FR")} € sur 6 mois`, consignes, body, hypotheses);
 }
 function bindTerritoire(){
   document.querySelectorAll("[data-filter]").forEach(sel=>{
@@ -826,9 +902,14 @@ function bindTerritoire(){
   const btnRevele = document.getElementById("btnRevele");
   if(btnRevele){
     btnRevele.addEventListener("click", ()=>{
+      if(!territoireConstraintsOk()){
+        alert("Vous ne pouvez pas valider : au moins une contrainte n'est pas respectée (heures ≤ 1800 h, volume ≤ 10 M€, minimum 5 NO GO).");
+        return;
+      }
       STATE.territoireRevele = true; saveState(STATE);
       document.getElementById("app").innerHTML = stepTerritoire();
       bindTerritoire();
+      renderNav();
     });
   }
 }
