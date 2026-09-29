@@ -197,7 +197,7 @@
     width:100%; padding:9px 10px; border:1px solid var(--border); border-radius:6px;
     font-family:inherit; font-size:14px; background:var(--border); color:var(--muted); font-style:italic;
   }
-  .contrainte-badge{font-size:11px; font-weight:700; white-space:nowrap;}
+  .contrainte-badge{font-size:11px; font-weight:700; white-space:nowrap; margin-left:8px;}
   .contrainte-badge.ok{color:var(--muted);}
   .contrainte-badge.ko{color:var(--danger-fg);}
   .kpi .box.label-top .l{margin-top:0; margin-bottom:4px;}
@@ -861,23 +861,21 @@ function stepTerritoire(){
 
     <label style="margin-top:18px;">Récapitulatif par couleur</label>
     <table class="recap-couleur">
-      <thead><tr><th>Couleur</th><th>Nb dossiers</th><th>Montant</th><th>% du montant (sélection)</th><th>% cible (Stratégie Commerciale, étape 1)</th><th>Heures de chiffrage</th></tr></thead>
+      <thead><tr><th>Couleur</th><th>Nb dossiers</th><th>Montant</th><th>Heures de chiffrage</th><th>% du montant (sélection)</th><th>% cible (Stratégie Commerciale, étape 1)</th></tr></thead>
       <tbody>
         ${["VERT","ORANGE","ROSE"].map(c=>{
           const pctSel = cumulMontant ? (parCouleur[c].montant/cumulMontant*100) : 0;
-          return `<tr><td>${c}</td><td>${parCouleur[c].n}</td><td>${fmtEUR(parCouleur[c].montant)}</td><td>${pctSel.toFixed(1)} %</td><td class="cible-cell">${cibleParCouleur[c]} %</td><td>${fmtH(parCouleur[c].heures)}</td></tr>`;
+          return `<tr><td>${c}</td><td>${parCouleur[c].n}</td><td>${fmtEUR(parCouleur[c].montant)}</td><td>${fmtH(parCouleur[c].heures)}</td><td>${pctSel.toFixed(1)} %</td><td class="cible-cell">${cibleParCouleur[c]} %</td></tr>`;
         }).join("")}
       </tbody>
     </table>
 
     <div class="cumul-box">
       <div class="cumul-row ${cumulMontant>CAPACITE_6MOIS_EUROS?'over':''}">
-        <span>Volume de chiffrage cumulé — ${fmtEUR(cumulMontant)} <span class="max">/ ${fmtEUR(CAPACITE_6MOIS_EUROS)} max</span></span>
-        <span class="contrainte-badge ${cumulMontant>CAPACITE_6MOIS_EUROS?'ko':'ok'}">${cumulMontant>CAPACITE_6MOIS_EUROS?'Contrainte non respectée':'Contrainte respectée'}</span>
+        <span>Volume de chiffrage cumulé — ${fmtEUR(cumulMontant)} <span class="max">/ ${fmtEUR(CAPACITE_6MOIS_EUROS)} max</span> <span class="contrainte-badge ${cumulMontant>CAPACITE_6MOIS_EUROS?'ko':'ok'}">${cumulMontant>CAPACITE_6MOIS_EUROS?'Contrainte non respectée':'Contrainte respectée'}</span></span>
       </div>
       <div class="cumul-row ${cumulHeures>CAPACITE_6MOIS_HEURES?'over':''}">
-        <span>Heures de chiffrage cumulées — ${fmtH(cumulHeures)} <span class="max">/ ${fmtH(CAPACITE_6MOIS_HEURES)} max</span></span>
-        <span class="contrainte-badge ${cumulHeures>CAPACITE_6MOIS_HEURES?'ko':'ok'}">${cumulHeures>CAPACITE_6MOIS_HEURES?'Contrainte non respectée':'Contrainte respectée'}</span>
+        <span>Heures de chiffrage cumulées — ${fmtH(cumulHeures)} <span class="max">/ ${fmtH(CAPACITE_6MOIS_HEURES)} max</span> <span class="contrainte-badge ${cumulHeures>CAPACITE_6MOIS_HEURES?'ko':'ok'}">${cumulHeures>CAPACITE_6MOIS_HEURES?'Contrainte non respectée':'Contrainte respectée'}</span></span>
       </div>
     </div>
 
