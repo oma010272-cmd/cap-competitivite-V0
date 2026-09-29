@@ -330,25 +330,25 @@ function fmtH(n){ return (Math.round((n||0)*10)/10).toLocaleString("fr-FR") + " 
    --------------------------------------------------------------------- */
 const DOSSIER_TERRITOIRE = [
   {n:1,  societe:"CHIMINOR INDUSTRIES", secteur:"INDUSTRIE", ouvrage:"USINE", pc:"EN COURS", icpe:"OUI", travaux:"EXTENSION", estimation:300000, marche:"GRES A GRES", historique:"CLIENT", relation:"BONNE", be:"ALLIE", maintenance:"AXI", concurrence:"Faible"},
-  {n:2,  societe:"AEROSTRUCT PICARDIE", secteur:"AERONAUTIQUE", ouvrage:"USINE", pc:"NON", icpe:"NON", travaux:"TRENTENAIRE", estimation:350000, marche:"PUBLIC", historique:"CLIENT NATIONAL", relation:"BONNE", be:"OUI", maintenance:"AXI", concurrence:"Faible"},
-  {n:3,  societe:"HOTEL LES TERRASSES DU LAC", secteur:"TERTIAIRE", ouvrage:"HÔTEL", pc:"NON", icpe:"NON", travaux:"EXISTANT", estimation:280000, marche:"GRES A GRES", historique:"CLIENT MAINTENANCE", relation:"BONNE", be:"ALLIE", maintenance:"AXI", concurrence:"Moyenne"},
+  {n:2,  societe:"MUSEE DE LA FRICADELLE", secteur:"TERTIAIRE", ouvrage:"ERP", pc:"NON", icpe:"NON", travaux:"TRENTENAIRE", estimation:350000, marche:"PUBLIC", historique:"SO", relation:"NEUTRE", be:"OUI", maintenance:"AUTRE", concurrence:"Faible"},
+  {n:3,  societe:"HOTEL LES TERRASSES DU LAC", secteur:"TERTIAIRE", ouvrage:"HÔTEL", pc:"SO", icpe:"NON", travaux:"EXISTANT", estimation:280000, marche:"GRES A GRES", historique:"CLIENT MAINTENANCE", relation:"BONNE", be:"ALLIE", maintenance:"AXI", concurrence:"Moyenne"},
   {n:4,  societe:"SYVALOR ENERGIE NORD", secteur:"CENTRE VALORISATION", ouvrage:"USINE", pc:"EN COURS", icpe:"OUI", travaux:"EXTENSION", estimation:420000, marche:"PUBLIC", historique:"CLIENT", relation:"BONNE", be:"ALLIE", maintenance:"AXI", concurrence:"Faible"},
-  {n:5,  societe:"PHARMALIA LABORATOIRES", secteur:"PHARMACEUTIQUE", ouvrage:"USINE", pc:"OUI", icpe:"OUI", travaux:"NEUF", estimation:380000, marche:"GRES A GRES", historique:"CLIENT NATIONAL", relation:"BONNE", be:"OUI", maintenance:"AXI", concurrence:"Moyenne"},
-  {n:6,  societe:"GALERIES DU CENTRE", secteur:"COMMERCE", ouvrage:"BUREAUX", pc:"NON", icpe:"NON", travaux:"EXISTANT", estimation:270000, marche:"GRES A GRES", historique:"CLIENT", relation:"BONNE", be:"OUI", maintenance:"AXI", concurrence:"Faible"},
-  {n:7,  societe:"SIDERMEX METALLURGIE", secteur:"INDUSTRIE", ouvrage:"USINE", pc:"OUI", icpe:"OUI", travaux:"NEUF", estimation:900000, marche:"EG", historique:"SO", relation:"NEUTRE", be:"?", maintenance:"SO", concurrence:"Forte"},
-  {n:8,  societe:"AEROPORT REGIONAL DE VERNAY", secteur:"AERONAUTIQUE", ouvrage:"AEROPORT", pc:"EN COURS", icpe:"NON", travaux:"EXTENSION", estimation:650000, marche:"CONTRACTANT", historique:"ANCIEN CLIENT", relation:"NEUTRE", be:"OUI", maintenance:"AUTRE", concurrence:"Moyenne"},
+  {n:5,  societe:"PHARMALIA LABORATOIRES", secteur:"PHARMACEUTIQUE", ouvrage:"USINE", pc:"OUI", icpe:"OUI", travaux:"NEUF", estimation:380000, marche:"GRES A GRES", historique:"CLIENT NATIONAL", relation:"BONNE", be:"HOSTILE", maintenance:"AXI", concurrence:"Moyenne"},
+  {n:6,  societe:"GALERIES DU CENTRE", secteur:"COMMERCE", ouvrage:"MAGASIN", pc:"SO", icpe:"NON", travaux:"EXISTANT", estimation:270000, marche:"GRES A GRES", historique:"CLIENT", relation:"BONNE", be:"OUI", maintenance:"AXI", concurrence:"Faible"},
+  {n:7,  societe:"SIDERMEX METALLURGIE", secteur:"INDUSTRIE", ouvrage:"USINE", pc:"OUI", icpe:"OUI", travaux:"NEUF", estimation:900000, marche:"EG", historique:"SO", relation:"NEUTRE", be:"OUI", maintenance:"SO", concurrence:"Forte"},
+  {n:8,  societe:"AEROPORT REGIONAL DE VERNAY", secteur:"AERONAUTIQUE", ouvrage:"AEROPORT", pc:"EN COURS", icpe:"NON", travaux:"EXTENSION", estimation:650000, marche:"CONTRACTANT", historique:"ANCIEN CLIENT", relation:"NEUTRE", be:"ALLIE", maintenance:"AUTRE", concurrence:"Moyenne"},
   {n:9,  societe:"LA FRITE DORÉE", secteur:"INDUSTRIE", ouvrage:"USINE", pc:"OUI", icpe:"OUI", travaux:"EXISTANT", estimation:1200000, marche:"GRES A GRES", historique:"SO", relation:"NEUTRE", be:"?", maintenance:"SO", concurrence:"Forte"},
-  {n:10, societe:"BUREAUX PLAZA CONFLUENCE", secteur:"TERTIAIRE", ouvrage:"BUREAUX", pc:"NON", icpe:"NON", travaux:"EXISTANT", estimation:500000, marche:"CONTRACTANT", historique:"ANCIEN CLIENT", relation:"NEUTRE", be:"OUI", maintenance:"AUTRE", concurrence:"Moyenne"},
-  {n:11, societe:"HOTEL AZURA RESORT", secteur:"TERTIAIRE", ouvrage:"HÔTEL", pc:"OUI", icpe:"NON", travaux:"NEUF", estimation:800000, marche:"GRES A GRES", historique:"SO", relation:"NEUTRE", be:"ALLIE", maintenance:"SO", concurrence:"Forte"},
-  {n:12, societe:"BIOTECH ANALYSE LABORATOIRE", secteur:"LABORATOIRE", ouvrage:"ERP", pc:"EN COURS", icpe:"OUI", travaux:"EXTENSION", estimation:650000, marche:"CONTRACTANT", historique:"ANCIEN CLIENT", relation:"NEUTRE", be:"OUI", maintenance:"AUTRE", concurrence:"Moyenne"},
-  {n:13, societe:"AVIATECH COMPOSANTS", secteur:"AERONAUTIQUE", ouvrage:"USINE", pc:"EN COURS", icpe:"NON", travaux:"EXTENSION", estimation:600000, marche:"CONTRACTANT", historique:"SO", relation:"NEUTRE", be:"OUI", maintenance:"SO", concurrence:"Moyenne"},
-  {n:14, societe:"PHARMEXA PRODUCTION", secteur:"PHARMACEUTIQUE", ouvrage:"USINE", pc:"NON", icpe:"OUI", travaux:"EXISTANT", estimation:580000, marche:"EG", historique:"SO", relation:"NEUTRE", be:"?", maintenance:"SO", concurrence:"Forte"},
-  {n:15, societe:"NORDLOG ENTREPOSAGE", secteur:"LOGISTIQUE", ouvrage:"ENTREPÔT", pc:"OUI", icpe:"OUI", travaux:"NEUF", estimation:290000, marche:"PUBLIC", historique:"SO", relation:"NEUTRE", be:"NON", maintenance:"SO", concurrence:"Forte"},
+  {n:10, societe:"BUREAUX PLAZA CONFLUENCE", secteur:"TERTIAIRE", ouvrage:"BUREAUX", pc:"SO", icpe:"NON", travaux:"EXISTANT", estimation:500000, marche:"CONTRACTANT", historique:"SO", relation:"NEUTRE", be:"OUI", maintenance:"AUTRE", concurrence:"Moyenne"},
+  {n:11, societe:"HOTEL AZURA RESORT", secteur:"TERTIAIRE", ouvrage:"HÔTEL", pc:"OUI", icpe:"NON", travaux:"NEUF", estimation:800000, marche:"EG", historique:"SO", relation:"NEUTRE", be:"ALLIE", maintenance:"SO", concurrence:"Forte"},
+  {n:12, societe:"BIOTECH ANALYSE LABORATOIRE", secteur:"LABORATOIRE", ouvrage:"USINE", pc:"OUI", icpe:"NON", travaux:"EXTENSION", estimation:650000, marche:"CONTRACTANT", historique:"ANCIEN CLIENT", relation:"NEUTRE", be:"OUI", maintenance:"AUTRE", concurrence:"Moyenne"},
+  {n:13, societe:"AVIATECH COMPOSANTS", secteur:"AERONAUTIQUE", ouvrage:"USINE", pc:"EN COURS", icpe:"OUI", travaux:"EXTENSION", estimation:600000, marche:"CONTRACTANT", historique:"SO", relation:"NEUTRE", be:"HOSTILE", maintenance:"SO", concurrence:"Moyenne"},
+  {n:14, societe:"PHARMEXA PRODUCTION", secteur:"PHARMACEUTIQUE", ouvrage:"USINE", pc:"SO", icpe:"OUI", travaux:"EXISTANT", estimation:580000, marche:"GRES A GRES", historique:"SO", relation:"NEUTRE", be:"?", maintenance:"SO", concurrence:"Forte"},
+  {n:15, societe:"NORDLOG ENTREPOSAGE", secteur:"LOGISTIQUE", ouvrage:"ENTREPÔT", pc:"EN COURS", icpe:"OUI", travaux:"NEUF", estimation:290000, marche:"EG", historique:"SO", relation:"MAUVAISE", be:"NON", maintenance:"SO", concurrence:"Forte"},
   {n:16, societe:"PARKING METROPOLE SUD", secteur:"PARKING", ouvrage:"PARKING", pc:"OUI", icpe:"NON", travaux:"NEUF", estimation:420000, marche:"EG", historique:"CLIENT NATIONAL", relation:"NEUTRE", be:"NON", maintenance:"SO", concurrence:"Moyenne"},
-  {n:17, societe:"CENTRE TECHNIQUE ATOMEA", secteur:"NUCLEAIRE", ouvrage:"MAGASIN", pc:"NON", icpe:"OUI", travaux:"EXISTANT", estimation:750000, marche:"CONTRACTANT", historique:"SO", relation:"NEUTRE", be:"?", maintenance:"AUTRE", concurrence:"Faible"},
-  {n:18, societe:"PARKING SILO GARE CENTRALE", secteur:"PARKING", ouvrage:"PARKING", pc:"NON", icpe:"NON", travaux:"EXISTANT", estimation:150000, marche:"GRES A GRES", historique:"SO", relation:"NEUTRE", be:"NON", maintenance:"SO", concurrence:"Forte"},
-  {n:19, societe:"EUROFRET LOGISTIQUE PLATEFORME", secteur:"LOGISTIQUE", ouvrage:"ENTREPÔT", pc:"OUI", icpe:"OUI", travaux:"NEUF", estimation:3000000, marche:"CONTRACTANT", historique:"SO", relation:"NEUTRE", be:"NON", maintenance:"SO", concurrence:"Forte"},
-  {n:20, societe:"FORGES ET MECANIQUE DE L'EST", secteur:"INDUSTRIE", ouvrage:"USINE", pc:"NON", icpe:"OUI", travaux:"TRENTENAIRE", estimation:620000, marche:"EG", historique:"ANCIEN CLIENT", relation:"MAUVAISE", be:"HOSTILE", maintenance:"AUTRE", concurrence:"Moyenne"},
+  {n:17, societe:"CENTRE TECHNIQUE ATOMEA", secteur:"NUCLEAIRE", ouvrage:"ENTREPÔT", pc:"SO", icpe:"OUI", travaux:"EXISTANT", estimation:750000, marche:"CONTRACTANT", historique:"SO", relation:"NEUTRE", be:"OUI", maintenance:"AUTRE", concurrence:"Faible"},
+  {n:18, societe:"PARKING SILO GARE CENTRALE", secteur:"PARKING", ouvrage:"PARKING", pc:"SO", icpe:"NON", travaux:"EXISTANT", estimation:150000, marche:"GRES A GRES", historique:"SO", relation:"NEUTRE", be:"NON", maintenance:"SO", concurrence:"Forte"},
+  {n:19, societe:"EUROFRET LOGISTIQUE PLATEFORME", secteur:"LOGISTIQUE", ouvrage:"ENTREPÔT", pc:"OUI", icpe:"OUI", travaux:"NEUF", estimation:3000000, marche:"CONTRACTANT", historique:"SO", relation:"NEUTRE", be:"HOSTILE", maintenance:"SO", concurrence:"Forte"},
+  {n:20, societe:"FORGES ET MECANIQUE DE L'EST", secteur:"INDUSTRIE", ouvrage:"USINE", pc:"NON", icpe:"OUI", travaux:"TRENTENAIRE", estimation:620000, marche:"GRES A GRES", historique:"ANCIEN CLIENT", relation:"NEUTRE", be:"HOSTILE", maintenance:"AUTRE", concurrence:"Moyenne"},
 ];
 const DOSSIER_FIL_ROUGE_N = 9;
 
@@ -416,6 +416,20 @@ const FICHE_PREP_RDV = [
   {section:"7 — Résultat attendu et prochaine étape", items:["Résultat minimum acceptable, sinon le RDV a échoué", "Prochaine étape proposée et date"]},
 ];
 
+/* Repère : structure de la fiche mission "classique" de la boîte à outils
+   CAP Compétitivité — non remplie en détail ici, juste utile pour situer
+   ce que la couleur, le niveau d'étude et les heures demandées à l'étape 8
+   représentent dans le document complet transmis au chiffreur. */
+const FICHE_MISSION_REPERE = [
+  {section:"0 — Identité de l'affaire", items:["Affaire / projet, réf. CRM, client, montant estimé, site, commercial", "Date de remise souhaitée"]},
+  {section:"1 — Contexte & enjeu réel", items:["Déclencheur du projet", "Enjeu dominant : ce que le client ne peut pas se permettre de rater", "Contraintes site (occupé, ICPE, SEVESO, permis feu, travail de nuit, arrêts programmés…)"]},
+  {section:"2 — Position commerciale", items:["Couleur retenue, indice de confiance", "Initiateur, concurrents, budget client", "Pourquoi gagner cette affaire ?"]},
+  {section:"3 — Périmètre technique", items:["Type de projet, activité, référentiel", "Documents disponibles, planning client"]},
+  {section:"4 — Commande au chiffreur", items:["Niveau d'étude demandé (N1/N2/N3) et heures allouées", "Matrice Prix / Planning / Mémoire technique par niveau"]},
+  {section:"5 — Points de vigilance transmis au chiffreur", items:["Vigilance identifiée, impact, commentaire — autant de lignes que nécessaire"]},
+  {section:"Validation", items:["Commercial et responsable commercial : nom + date", "Activation CENG (obligatoire au-delà de 1,5 M€ HT)"]},
+];
+
 const AGENTS = [
   {id:"directeur", nom:"Philippe Vasseur", role:"Directeur d'usine"},
   {id:"chefprojet", nom:"Amélie Rostand", role:"Chef de projet"},
@@ -458,7 +472,7 @@ const STEPS = [
   {id:"echiquierMaj", label:"6 · Échiquier (MAJ)"},
   {id:"swot", label:"7 · SWOT"},
   {id:"mission", label:"8 · Fiche Mission"},
-  {id:"strategie", label:"9 · Stratégie commerciale"},
+  {id:"strategie", label:"9 · Échec et Mat"},
 ];
 const STEP_TITLES = {
   pac:"Étape 1 — Stratégie Commerciale",
@@ -469,7 +483,7 @@ const STEP_TITLES = {
   echiquierMaj:"Étape 6 — Score Échiquier (mise à jour) & cartographie",
   swot:"Étape 7 — SWOT",
   mission:"Étape 8 — Fiche Mission Chiffreur",
-  strategie:"Étape 9 — Stratégie commerciale",
+  strategie:"Étape 9 — Échec et Mat",
 };
 
 let currentStep = "accueil";
@@ -582,8 +596,8 @@ function stepAccueil(){
   </div>
   <div class="card">
     <h2>Déroulé de la matinée</h2>
-    <div class="meta">Un scénario unique, suivi par toutes les tables, du Plan d'Action jusqu'à la stratégie commerciale.</div>
-    <p style="font-size:13.5px; line-height:1.7;">Plan d'Action → Prospection & hiérarchisation → Score Échiquier → Go/No-Go → Entretien agent → Score Échiquier (mise à jour) → SWOT → Fiche Mission → Stratégie commerciale.</p>
+    <div class="meta">Un scénario unique, suivi par toutes les tables, de la Stratégie Commerciale jusqu'à l'Échec et Mat.</div>
+    <p style="font-size:13.5px; line-height:1.7;">Stratégie Commerciale → Prospection & hiérarchisation → Score Échiquier → Go/No-Go → Entretien agent → Score Échiquier (mise à jour) → SWOT → Fiche Mission → Échec et Mat.</p>
     <div class="btn-row">
       <button class="btn" type="button" id="btnCommencer">Commencer l'exercice — Étape 1</button>
     </div>
@@ -1122,7 +1136,7 @@ function stepAgent(){
     </div>`).join("");
 
   const body = `
-    <div class="save-note" style="margin-bottom:10px;">L'entretien se déroule via l'agent Copilot dédié à cet interlocuteur (lien communiqué en séance par l'animateur — plateforme en cours de confirmation).</div>
+    <div class="save-note" style="margin-bottom:10px;">L'entretien se déroule via l'agent Copilot dédié à cet interlocuteur (lien communiqué en séance par l'animateur).</div>
     <div class="btn-row" style="margin-top:0; margin-bottom:14px;">
       <button class="btn secondary" type="button" id="btnFichePrep">Voir la fiche de préparation rendez-vous (repère)</button>
     </div>
@@ -1280,7 +1294,19 @@ function stepMission(){
     {text:"Appuyez-vous sur le tableau des niveaux N1/N2/N3 ci-dessous pour calibrer votre demande."},
     {text:"Le nombre d'heures demandées n'est pas un forfait, c'est la traduction chiffrée de tout ce qu'on vient de faire.", cle:true},
   ];
+  const ficheMissionHtml = FICHE_MISSION_REPERE.map(s=>`
+    <div style="margin-bottom:10px;">
+      <div style="font-weight:600; font-size:13px; color:var(--strong-text);">${s.section}</div>
+      <ul style="margin:4px 0 0; padding-left:20px;">${s.items.map(it=>`<li style="font-size:12.5px; line-height:1.6;">${it}</li>`).join("")}</ul>
+    </div>`).join("");
   const body = `
+    <div class="btn-row" style="margin-top:0; margin-bottom:14px;">
+      <button class="btn secondary" type="button" id="btnFicheMission">Voir la fiche mission de la boîte à outils (repère)</button>
+    </div>
+    <div class="cumul-box" id="ficheMissionPanel" style="display:none; margin-top:0; margin-bottom:14px;">
+      <div class="save-note" style="margin-top:0;">Structure de la fiche mission classique de la boîte à outils CAP Compétitivité — non remplie en détail ici, juste utile pour situer ce que vous renseignez ci-dessous dans le document complet transmis au chiffreur.</div>
+      ${ficheMissionHtml}
+    </div>
     <div class="grid2">
       <div>
         <label>Couleur retenue</label>
@@ -1316,13 +1342,17 @@ function stepMission(){
   return stepShell("mission", "Traduction chiffrée de tout ce qui précède", consignes, body);
 }
 function bindMission(){
+  document.getElementById("btnFicheMission").addEventListener("click", ()=>{
+    const panel = document.getElementById("ficheMissionPanel");
+    panel.style.display = panel.style.display === "none" ? "block" : "none";
+  });
   document.getElementById("misCouleur").addEventListener("change", e=>{ STATE.mission=STATE.mission||{}; STATE.mission.couleur=e.target.value; saveState(STATE); });
   document.getElementById("misNiveau").addEventListener("change", e=>{ STATE.mission=STATE.mission||{}; STATE.mission.niveau=e.target.value; saveState(STATE); });
   document.getElementById("misEnjeux").addEventListener("input", e=>{ STATE.mission=STATE.mission||{}; STATE.mission.enjeux=e.target.value; saveState(STATE); });
   document.getElementById("misHeures").addEventListener("input", e=>{ STATE.mission=STATE.mission||{}; STATE.mission.heures=e.target.value; saveState(STATE); });
 }
 
-/* ---------------------- Étape 9 (NOUVELLE) : Stratégie commerciale ------------------------- */
+/* ---------------------- Étape 9 : Échec et Mat ------------------------- */
 const STRATEGIE_QUESTIONS = [
   {titre:"Vis-à-vis du client et de ses enjeux", questions:[
     "Comment répond-on concrètement à ses enjeux ?",
