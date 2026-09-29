@@ -193,7 +193,10 @@
   .hypotheses-box h4{margin:0 0 8px; font-size:12px; text-transform:uppercase; letter-spacing:.5px; color:#fff;}
   .hypotheses-box p{font-size:12.5px; line-height:1.5; margin:0 0 6px; color:#fff;}
   .hypotheses-box p:last-child{margin-bottom:0;}
-  .locked-cell{background:var(--border); color:var(--muted); font-style:italic;}
+  .locked-value{
+    width:100%; padding:9px 10px; border:1px solid var(--border); border-radius:6px;
+    font-family:inherit; font-size:14px; background:var(--border); color:var(--muted); font-style:italic;
+  }
   .contrainte-badge{font-size:11px; font-weight:700; white-space:nowrap;}
   .contrainte-badge.ok{color:var(--muted);}
   .contrainte-badge.ko{color:var(--danger-fg);}
@@ -484,13 +487,15 @@ function stepShell(stepId, meta, consignesLines, bodyHtml, hypotheses){
     </div>` : "";
   return `
   <div class="card">
-    ${hypothesesHtml}
     <div class="step-layout">
-      <aside class="consignes-box">
-        <h4>Consignes</h4>
-        ${normales}
-        ${cles}
-        ${questions}
+      <aside class="consignes-col">
+        ${hypothesesHtml}
+        <div class="consignes-box">
+          <h4>Consignes</h4>
+          ${normales}
+          ${cles}
+          ${questions}
+        </div>
       </aside>
       <div class="step-content">
         <h2>${STEP_TITLES[stepId]}</h2>
@@ -645,29 +650,32 @@ function stepPAC(){
   ];
 
   const body = `
-    <label>Repères de calcul (valeurs fixes de l'agence)</label>
-    <div class="save-note" style="margin-top:0;">Ces valeurs ne bougent pas quand vous changez vos 6 saisies ci-dessous — ce sont elles qui transforment vos % en heures et en marge. La colonne Marge nette est verrouillée : c'est une donnée fixe de l'agence, pas une saisie.</div>
-    <table class="recap-couleur">
-      <thead><tr><th>Couleur</th><th>€ / heure de chiffrage</th><th>Marge nette</th></tr></thead>
-      <tbody>
-        ${["VERT","ORANGE","ROSE"].map(c=>`<tr><td>${c}</td><td>${EUR_H_COULEUR[c].toLocaleString("fr-FR")} €/h</td><td class="locked-cell">🔒 ${(PAC_MARGES[c]*100).toFixed(0)} %</td></tr>`).join("")}
-      </tbody>
-    </table>
+    <label>Marge nette par couleur (valeur fixe de l'agence)</label>
+    <div class="save-note" style="margin-top:0;">Ces valeurs ne bougent pas quand vous changez vos saisies ci-dessous — ce sont elles qui transforment vos % en marge.</div>
+    <div class="grid3">
+      <div><label>VERT</label><div class="locked-value">🔒 ${(PAC_MARGES.VERT*100).toFixed(0)} %</div></div>
+      <div><label>ORANGE</label><div class="locked-value">🔒 ${(PAC_MARGES.ORANGE*100).toFixed(0)} %</div></div>
+      <div><label>ROSE</label><div class="locked-value">🔒 ${(PAC_MARGES.ROSE*100).toFixed(0)} %</div></div>
+    </div>
 
-    <label style="margin-top:18px;">Vos 6 saisies</label>
+    <label style="margin-top:18px;">% Volume par couleur</label>
     <div class="grid3">
       <div><label>% Volume VERT</label><input type="number" min="0" max="100" id="pv" value="${s.pv}"></div>
       <div><label>% Volume ORANGE</label><input type="number" min="0" max="100" id="po" value="${s.po}"></div>
       <div><label>% Volume ROSE</label><input type="number" min="0" max="100" id="pr" value="${s.pr}"></div>
-      <div><label>Taux transfo. VERT (%)</label><input type="number" min="0" max="100" id="tv" value="${s.tv}"></div>
-      <div><label>Taux transfo. ORANGE (%)</label><input type="number" min="0" max="100" id="to" value="${s.to}"></div>
-      <div><label>Taux transfo. ROSE (%)</label><input type="number" min="0" max="100" id="tr" value="${s.tr}"></div>
     </div>
     ${totalPct !== 100 ? `<div class="save-note" style="color:var(--danger-fg); font-weight:700;">⚠ La somme des % de volume fait ${totalPct}% — elle doit faire 100%.</div>` : ""}
     <div class="kpi">
-      <div class="box"><div class="v">${fmtEUR(r.objV)}</div><div class="l">Objectif VERT (€)</div></div>
-      <div class="box"><div class="v">${fmtEUR(r.objO)}</div><div class="l">Objectif ORANGE (€)</div></div>
-      <div class="box"><div class="v">${fmtEUR(r.objR)}</div><div class="l">Objectif ROSE (€)</div></div>
+      <div class="box"><div class="v">${fmtEUR(r.objV)}</div><div class="l">Objectif commande VERT</div></div>
+      <div class="box"><div class="v">${fmtEUR(r.objO)}</div><div class="l">Objectif commande ORANGE</div></div>
+      <div class="box"><div class="v">${fmtEUR(r.objR)}</div><div class="l">Objectif commande ROSE</div></div>
+    </div>
+
+    <label style="margin-top:18px;">Taux de transformation par couleur</label>
+    <div class="grid3">
+      <div><label>Taux transfo. VERT (%)</label><input type="number" min="0" max="100" id="tv" value="${s.tv}"></div>
+      <div><label>Taux transfo. ORANGE (%)</label><input type="number" min="0" max="100" id="to" value="${s.to}"></div>
+      <div><label>Taux transfo. ROSE (%)</label><input type="number" min="0" max="100" id="tr" value="${s.tr}"></div>
     </div>
 
     <label style="margin-top:18px;">Contraintes à respecter</label>
@@ -686,6 +694,13 @@ function stepPAC(){
       <div class="box"><div class="v">${fmtEUR(r.mnTotal)}</div><div class="l">Marge nette totale calculée (€)</div></div>
       <div class="box"><div class="v">${r.mnPct.toFixed(1)} %</div><div class="l">Marge nette totale calculée (%)</div></div>
       <div class="box"><div class="v">${Math.round(r.hV)} / ${Math.round(r.hO)} / ${Math.round(r.hR)}</div><div class="l">Heures de chiffrage VERT / ORANGE / ROSE</div></div>
+    </div>
+
+    <label style="margin-top:18px;">€ / heure de chiffrage par couleur (repère fixe de l'agence)</label>
+    <div class="kpi">
+      <div class="box"><div class="v">${EUR_H_COULEUR.VERT.toLocaleString("fr-FR")} €/h</div><div class="l">VERT</div></div>
+      <div class="box"><div class="v">${EUR_H_COULEUR.ORANGE.toLocaleString("fr-FR")} €/h</div><div class="l">ORANGE</div></div>
+      <div class="box"><div class="v">${EUR_H_COULEUR.ROSE.toLocaleString("fr-FR")} €/h</div><div class="l">ROSE</div></div>
     </div>`;
 
   return stepShell("pac", "Comprendre la mécanique des chiffres et leur interaction", consignes, body, hypotheses);
