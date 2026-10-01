@@ -463,7 +463,6 @@ const EUR_H_COULEUR = { VERT: 6700, ORANGE: 4300, ROSE: 7300 };
 
 /* Capacité disponible sur la fenêtre de l'exercice (6 mois = moitié de l'année) */
 const CAPACITE_6MOIS_HEURES = PAC_RESSOURCES / 2;      // 1800 h
-const CAPACITE_6MOIS_EUROS = PAC_CAPACITE_EUROS / 2;   // 10 000 000 €
 const NOGO_MIN = 4;
 
 const STEPS = [
@@ -544,16 +543,15 @@ function pacConstraintsOk(){
 }
 function territoireConstraintsOk(){
   const choix = STATE.territoire || {};
-  let cumulHeures = 0, cumulMontant = 0;
+  let cumulHeures = 0;
   DOSSIER_TERRITOIRE.forEach(d=>{
     const c = choix[d.n];
     if(c === "VERT" || c === "ORANGE" || c === "ROSE"){
       cumulHeures += d.estimation / EUR_H_COULEUR[c];
-      cumulMontant += d.estimation;
     }
   });
   const nogoCount = Object.values(choix).filter(v=>v==="NO GO").length;
-  return cumulHeures <= CAPACITE_6MOIS_HEURES && cumulMontant <= CAPACITE_6MOIS_EUROS && nogoCount >= NOGO_MIN;
+  return cumulHeures <= CAPACITE_6MOIS_HEURES && nogoCount >= NOGO_MIN;
 }
 function renderNav(){
   const nav = document.getElementById("stepsNav");
@@ -752,13 +750,13 @@ function stepTerritoire(){
     {text:"Objectif : montrer que la prospection ne doit pas être aveugle, mais découler de la Stratégie Commerciale, et qu'elle suppose de savoir dire non."},
     {text:"Classez chacun des 20 dossiers : VERT / ORANGE / ROSE / NO GO."},
     {text:`Au moins ${NOGO_MIN} dossiers doivent être déclarés NO GO, chacun justifié à l'oral.`},
-    {text:"Surveillez les cumuls (heures et volume) par rapport au maximum possible sur les 6 mois de l'exercice."},
+    {text:"Surveillez le cumul des heures de chiffrage par rapport au maximum possible sur les 6 mois de l'exercice."},
     {text:"La couleur ne caractérise pas le client, elle caractérise notre position — et notre position découle de ce qu'on a décidé dans la Stratégie Commerciale.", cle:true},
   ];
 
   const hypotheses = [
     "Il s'agit d'une liste de <strong>20 projets potentiels</strong>, établie pour la période des <strong>6 mois</strong> à venir.",
-    `La capacité de chiffrage est donc de <strong>${fmtH(CAPACITE_6MOIS_HEURES)}</strong>, pour un objectif de <strong>${fmtEUR(CAPACITE_6MOIS_EUROS)}</strong> sur ces 6 mois.`,
+    `La capacité de chiffrage est donc de <strong>${fmtH(CAPACITE_6MOIS_HEURES)}</strong> sur ces 6 mois.`,
     "11 thèmes permettent de filtrer les informations, en fonction des priorités issues de la Stratégie Commerciale (étape 1).",
   ];
 
@@ -888,9 +886,6 @@ function stepTerritoire(){
     </table>
 
     <div class="cumul-box">
-      <div class="cumul-row ${cumulMontant>CAPACITE_6MOIS_EUROS?'over':''}">
-        <span>Volume de chiffrage cumulé — ${fmtEUR(cumulMontant)} <span class="max">/ ${fmtEUR(CAPACITE_6MOIS_EUROS)} max</span> <span class="contrainte-badge ${cumulMontant>CAPACITE_6MOIS_EUROS?'ko':'ok'}">${cumulMontant>CAPACITE_6MOIS_EUROS?'Contrainte non respectée':'Contrainte respectée'}</span></span>
-      </div>
       <div class="cumul-row ${cumulHeures>CAPACITE_6MOIS_HEURES?'over':''}">
         <span>Heures de chiffrage cumulées — ${fmtH(cumulHeures)} <span class="max">/ ${fmtH(CAPACITE_6MOIS_HEURES)} max</span> <span class="contrainte-badge ${cumulHeures>CAPACITE_6MOIS_HEURES?'ko':'ok'}">${cumulHeures>CAPACITE_6MOIS_HEURES?'Contrainte non respectée':'Contrainte respectée'}</span></span>
       </div>
@@ -898,7 +893,7 @@ function stepTerritoire(){
 
     ${margeHtml}
     <div class="btn-row">
-      <button class="btn secondary" type="button" id="btnRevele" ${(!tOk && !revele) ? `disabled title="Respectez les 3 contraintes (heures ≤ ${fmtH(CAPACITE_6MOIS_HEURES)}, volume ≤ ${fmtEUR(CAPACITE_6MOIS_EUROS)}, minimum ${NOGO_MIN} NO GO) avant de valider."` : ""}>${revele ? "Classification validée" : "Valider ma classification"}</button>
+      <button class="btn secondary" type="button" id="btnRevele" ${(!tOk && !revele) ? `disabled title="Respectez les 2 contraintes (heures ≤ ${fmtH(CAPACITE_6MOIS_HEURES)}, minimum ${NOGO_MIN} NO GO) avant de valider."` : ""}>${revele ? "Classification validée" : "Valider ma classification"}</button>
     </div>`;
 
   return stepShell("territoire", `20 dossiers · potentiel ≈ ${total.toLocaleString("fr-FR")} € sur 6 mois`, consignes, body, hypotheses);
@@ -933,7 +928,7 @@ function bindTerritoire(){
   if(btnRevele){
     btnRevele.addEventListener("click", ()=>{
       if(!territoireConstraintsOk()){
-        alert(`Vous ne pouvez pas valider : au moins une contrainte n'est pas respectée (heures ≤ ${fmtH(CAPACITE_6MOIS_HEURES)}, volume ≤ ${fmtEUR(CAPACITE_6MOIS_EUROS)}, minimum ${NOGO_MIN} NO GO).`);
+        alert(`Vous ne pouvez pas valider : au moins une contrainte n'est pas respectée (heures ≤ ${fmtH(CAPACITE_6MOIS_HEURES)}, minimum ${NOGO_MIN} NO GO).`);
         return;
       }
       STATE.territoireRevele = true; saveState(STATE);
