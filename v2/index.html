@@ -833,6 +833,9 @@ function stepTerritoire(){
     }
   });
   const cibleParCouleur = {VERT:Number(pac.pv)||0, ORANGE:Number(pac.po)||0, ROSE:Number(pac.pr)||0};
+  const pipeTotal = parCouleur.VERT.montant * (Number(pac.tv)/100)
+                   + parCouleur.ORANGE.montant * (Number(pac.to)/100)
+                   + parCouleur.ROSE.montant * (Number(pac.tr)/100);
 
   const revele = !!STATE.territoireRevele;
   const tOk = territoireConstraintsOk();
@@ -900,6 +903,10 @@ function stepTerritoire(){
     <div class="cumul-box">
       <div class="cumul-row ${cumulHeures>CAPACITE_6MOIS_HEURES?'over':''}">
         <span>Heures de chiffrage cumulées — ${fmtH(cumulHeures)} <span class="max">/ ${fmtH(CAPACITE_6MOIS_HEURES)} max</span> <span class="contrainte-badge ${cumulHeures>CAPACITE_6MOIS_HEURES?'ko':'ok'}">${cumulHeures>CAPACITE_6MOIS_HEURES?'Contrainte non respectée':'Contrainte respectée'}</span></span>
+      </div>
+      <div class="cumul-row">
+        <span>Pipe — somme par couleur du volume chiffré × taux de transformation</span>
+        <span class="val">${fmtEUR(pipeTotal)}</span>
       </div>
     </div>
 
