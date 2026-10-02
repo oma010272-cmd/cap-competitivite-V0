@@ -227,6 +227,8 @@
   table.recap-couleur th{background:var(--navy-light); color:#fff; padding:5px 7px; text-align:left;}
   table.recap-couleur td{padding:5px 7px; border-bottom:1px solid var(--border);}
   table.recap-couleur td.cible-cell{background:var(--orange-bg); color:var(--orange-fg); font-weight:700;}
+  table.recap-couleur tfoot .total-row td{font-weight:700; color:var(--strong-text); border-top:2px solid var(--navy); background:var(--bg);}
+  table.recap-couleur tfoot .total-row td.cible-cell{background:var(--orange-bg); color:var(--orange-fg);}
 
   /* ---- Accueil ---- */
   .hero{
@@ -883,6 +885,16 @@ function stepTerritoire(){
           return `<tr><td>${c}</td><td>${parCouleur[c].n}</td><td>${fmtEUR(parCouleur[c].montant)}</td><td>${fmtH(parCouleur[c].heures)}</td><td>${pctSel.toFixed(1)} %</td><td class="cible-cell">${cibleParCouleur[c]} %</td></tr>`;
         }).join("")}
       </tbody>
+      <tfoot>
+        <tr class="total-row">
+          <td>Total</td>
+          <td>${parCouleur.VERT.n + parCouleur.ORANGE.n + parCouleur.ROSE.n}</td>
+          <td>${fmtEUR(cumulMontant)}</td>
+          <td>${fmtH(cumulHeures)}</td>
+          <td>${(cumulMontant ? 100 : 0).toFixed(1)} %</td>
+          <td class="cible-cell">${(cibleParCouleur.VERT + cibleParCouleur.ORANGE + cibleParCouleur.ROSE)} %</td>
+        </tr>
+      </tfoot>
     </table>
 
     <div class="cumul-box">
