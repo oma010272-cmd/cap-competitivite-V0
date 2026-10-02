@@ -217,6 +217,7 @@
   /* ---- Cumuls étape 2 ---- */
   .cumul-box{background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:14px; margin-top:14px;}
   .cumul-row{display:flex; justify-content:space-between; gap:10px; padding:6px 0; border-bottom:1px solid var(--border); font-size:13px;}
+  .cumul-row.left{justify-content:flex-start; gap:16px;}
   .cumul-row:last-child{border-bottom:none;}
   .cumul-row .max{color:var(--muted); font-size:11.5px;}
   .cumul-row.over .val{color:var(--danger-fg); font-weight:700;}
@@ -904,8 +905,8 @@ function stepTerritoire(){
       <div class="cumul-row ${cumulHeures>CAPACITE_6MOIS_HEURES?'over':''}">
         <span>Heures de chiffrage cumulées — ${fmtH(cumulHeures)} <span class="max">/ ${fmtH(CAPACITE_6MOIS_HEURES)} max</span> <span class="contrainte-badge ${cumulHeures>CAPACITE_6MOIS_HEURES?'ko':'ok'}">${cumulHeures>CAPACITE_6MOIS_HEURES?'Contrainte non respectée':'Contrainte respectée'}</span></span>
       </div>
-      <div class="cumul-row">
-        <span>Pipe — somme par couleur du volume chiffré × taux de transformation</span>
+      <div class="cumul-row left">
+        <span title="Somme, par couleur, du volume chiffré sélectionné × taux de transformation de l'étape 1">Pipe</span>
         <span class="val">${fmtEUR(pipeTotal)}</span>
       </div>
     </div>
