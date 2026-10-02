@@ -847,8 +847,8 @@ function stepTerritoire(){
     const margePct = cumulMontant ? (margeTotal/cumulMontant*100) : 0;
     margeHtml = `
     <div class="kpi" style="margin-top:14px;">
-      <div class="box label-top"><div class="l">Marge nette potentielle (€)</div><div class="v">${fmtEUR(margeTotal)}</div></div>
-      <div class="box label-top"><div class="l">Marge nette potentielle (%)</div><div class="v">${margePct.toFixed(1)} %</div></div>
+      <div class="box label-top"><div class="l">Marge nette théorique sur répartition (non réelle) (€)</div><div class="v">${fmtEUR(margeTotal)}</div></div>
+      <div class="box label-top"><div class="l">Marge nette théorique sur répartition (non réelle) (%)</div><div class="v">${margePct.toFixed(1)} %</div></div>
     </div>`;
   }
 
